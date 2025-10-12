@@ -1,0 +1,46 @@
+# Entorno virtual
+venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Configuración del sistema
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints
+
+# Archivos de logs
+*.log
+
+# Archivos de base de datos
+*.sqlite3
+
+# Archivos de caché
+*.egg-info/
+.eggs/
+*.egg
+*.dist-info/
+pip-wheel-metadata/
+
+# Archivos temporales de compilación
+build/
+dist/
+*.so
+*.dll
+*.dylib
+
+# Archivos de IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de Python específicos de paquetes grandes
+opencv-python/
+mediapipe/
+jaxlib/

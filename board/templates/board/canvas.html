@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizarra Virtual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex h-screen">
+
+    <!-- Panel lateral -->
+    <div class="w-48 bg-gray-200 flex flex-col items-center justify-center space-y-6 shadow-lg">
+        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🏠</button>
+        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🖌️</button>
+        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🎨</button>
+        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">⬜</button>
+        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">✨</button>
+        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🧽</button>
+        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">💾</button>
+    </div>
+
+    <!-- Zona central: lienzo + cámara -->
+    <div class="flex flex-1">
+        <!-- Lienzo -->
+        <div class="flex-1 flex items-center justify-center bg-white shadow-inner">
+            <img id="video" src="{% url 'video_feed' %}" alt="Lienzo"
+                 class="w-full h-full object-contain border-4 border-gray-300 rounded-lg">
+        </div>
+
+        <!-- Cámara (derecha) -->
+        <div class="w-80 bg-white shadow-lg border-l flex flex-col items-center justify-center">
+            <div class="p-4 w-full flex flex-col items-center">
+                <img id="camara" src="{% url 'camera_feed' %}" alt="Cámara"
+                    class="rounded-lg shadow-md border border-gray-300 w-full h-56 object-cover" />
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
