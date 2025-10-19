@@ -1,42 +1,120 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Pizarra Virtual</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{% static 'board/css/style.css' %}" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            font-family: "Inter", sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .left-panel {
+            width: 25%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid #d1d5db;
+        }
+        #camera {
+            width: 90%;
+            border-radius: 12px;
+            border: 2px solid #9ca3af;
+            background: #fff;
+        }
+        .main-panel {
+            flex-grow: 1;
+            position: relative;
+            background: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #video {
+            width: 90%;
+            max-height: 85vh;
+            border-radius: 12px;
+            border: 2px solid #d1d5db;
+            object-fit: cover;
+            background: #fff;
+        }
+        #pointer {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: red;
+            pointer-events: none;
+            display: none;
+            z-index: 20;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex h-screen">
-
-    <!-- Panel lateral -->
-    <div class="w-48 bg-gray-200 flex flex-col items-center justify-center space-y-6 shadow-lg">
-        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🏠</button>
-        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🖌️</button>
-        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🎨</button>
-        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">⬜</button>
-        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">✨</button>
-        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">🧽</button>
-        <button class="bg-white shadow p-3 rounded-full hover:bg-gray-100">💾</button>
+<body>
+<div class="container">
+    <!-- Cámara lateral -->
+    <div class="left-panel">
+        <img id="camera" src="{% url 'camera_feed' %}" alt="Cámara">
     </div>
 
-    <!-- Zona central: lienzo + cámara -->
-    <div class="flex flex-1">
-        <!-- Lienzo -->
-        <div class="flex-1 flex items-center justify-center bg-white shadow-inner">
-            <img id="video" src="{% url 'video_feed' %}" alt="Lienzo"
-                 class="w-full h-full object-contain border-4 border-gray-300 rounded-lg">
-        </div>
-
-        <!-- Cámara (derecha) -->
-        <div class="w-80 bg-white shadow-lg border-l flex flex-col items-center justify-center">
-            <div class="p-4 w-full flex flex-col items-center">
-                <img id="camara" src="{% url 'camera_feed' %}" alt="Cámara"
-                    class="rounded-lg shadow-md border border-gray-300 w-full h-56 object-cover" />
-            </div>
-        </div>
-
+    <!-- Pizarra -->
+    <div class="main-panel">
+        <img id="video" src="{% url 'video_feed' %}" alt="Pizarra">
     </div>
+</div>
+
+<script>
+async function updatePointer() {
+    try {
+        const res = await fetch("{% url 'pointer_data' %}");
+        const data = await res.json();
+        const pointer = document.getElementById("pointer");
+
+        // 🔹 Si se detecta una redirección, enviamos al home
+        if (data.redirect && data.url) {
+            // 🔹 Avisar al backend que ya redirigimos
+            await fetch("{% url 'reset_redirect' %}", { method: "POST" });
+
+            // 🔹 Redirigir al Home
+            window.location.href = data.url;
+            return;
+        }
+
+        const baseWidth = 1280;
+        const baseHeight = 720;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+
+        const x = (data.x / baseWidth) * screenW * 1.45;
+        const y = (data.y / baseHeight) * screenH;
+
+        const xClamped = Math.min(Math.max(x, 5), screenW - 5);
+        const yClamped = Math.min(Math.max(y, 5), screenH - 5);
+
+        if (data.mode === "select") {
+            pointer.style.display = "block";
+            pointer.style.left = `${xClamped}px`;
+            pointer.style.top = `${yClamped}px`;
+        } else {
+            pointer.style.display = "none";
+        }
+    } catch (err) {
+        console.error("Error puntero:", err);
+    }
+}
+setInterval(updatePointer, 100);
+</script>
+
 </body>
-
 </html>

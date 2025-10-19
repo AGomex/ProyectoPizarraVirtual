@@ -49,3 +49,11 @@ def video_feed(request):
 
 def camera_feed(request):
     return StreamingHttpResponse(generate_camera_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
+
+current_mode = "brush"
+
+def set_mode(request, mode):
+    global current_mode
+    current_mode = mode
+    print(f"🟢 Modo cambiado a: {mode}")
+    return JsonResponse({"status": "ok", "mode": mode})

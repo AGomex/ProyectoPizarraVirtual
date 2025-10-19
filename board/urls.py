@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from board.opencv_scripts.video_stream import get_pointer_data , reset_redirect
 
 urlpatterns = [
     path("api/save/", views.save_drawing, name="save_drawing"),
@@ -10,5 +11,9 @@ urlpatterns = [
     path('gallery/', views.gallery, name='gallery'),
     path('video_feed/', views.video_feed, name='video_feed'),
     path('camera_feed/', views.camera_feed, name='camera_feed'),
+    path('pointer-data/', get_pointer_data, name='pointer_data'),
+    path("set_mode/<str:mode>/", views.set_mode, name="set_mode"),
+    path('reset_redirect/', reset_redirect, name='reset_redirect'),
+
     # vistas HTML: home, canvas, galería
 ]
