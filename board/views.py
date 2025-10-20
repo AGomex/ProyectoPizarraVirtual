@@ -41,6 +41,9 @@ def canvas_view(request):
 def gallery(request):
     return render(request, 'board/gallery.html')
 
+def manual(request):
+    return render(request, 'board/manual.html')
+
 def canvas_view(request):
     return render(request, 'board/canvas.html')
 

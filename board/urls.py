@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('canvas/', views.canvas_view, name='canvas'),
     path('gallery/', views.gallery, name='gallery'),
+    path('manual/', views.manual, name='manual'),
     path('video_feed/', views.video_feed, name='video_feed'),
     path('camera_feed/', views.camera_feed, name='camera_feed'),
     path('pointer-data/', get_pointer_data, name='pointer_data'),

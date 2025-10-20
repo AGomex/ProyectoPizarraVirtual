@@ -1,0 +1,429 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Uso - Pizarra Virtual</title>
+    <link href="{% static 'board/css/style.css' %}" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: url("{% static 'board/css/FondoSistema.jpg' %}") center center / cover no-repeat fixed;
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.2);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .back-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(-5px);
+        }
+
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .intro-text {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .intro-text h2 {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .intro-text p {
+            font-size: 1.1rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .step-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .step-description {
+            font-size: 1.1rem;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        .step-image {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-image img {
+            width: 100%;
+            max-width: 450px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-image-placeholder {
+            width: 100%;
+            max-width: 450px;
+            height: 300px;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Alternar orden: imagen a la derecha e izquierda */
+        .step:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        @media (max-width: 968px) {
+            .step {
+                flex-direction: column !important;
+                padding: 30px;
+            }
+
+            .step-image img,
+            .step-image-placeholder {
+                max-width: 100%;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .step-title {
+                font-size: 1.5rem;
+            }
+
+            .step-description {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .header {
+                margin-bottom: 30px;
+            }
+
+            .intro-text {
+                padding: 20px;
+            }
+
+            .step {
+                padding: 20px;
+            }
+
+            .step-number {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="{% url 'home' %}" class="back-button" title="Volver al inicio">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </a>
+            <h1 class="title">Manual de Uso</h1>
+        </div>
+
+        <!-- Introducción -->
+        <div class="intro-text">
+            <h2>Bienvenido a VirtualBoard</h2>
+            <p>Aprende a utilizar todas las funcionalidades de nuestra pizarra virtual controlada por gestos. Sigue estos sencillos pasos para crear, editar y compartir tus dibujos de manera profesional usando solo los gestos de tu manos.
+            </p>
+        </div>
+
+        <!-- Pasos del manual -->
+        <div class="steps-container">
+            
+            <!-- Paso 1 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Accede a la pizarra</h3>
+                    <p class="step-description">
+                        Haz clic en el botón "Empezar a dibujar" desde la página principal. Esto te llevará directamente al lienzo donde podrás comenzar a crear tus obras.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Botón Empezar</div>
+                    <!-- <img src="{% static 'board/images/paso1.jpg' %}" alt="Paso 1"> -->
+                </div>
+            </div>
+
+            <!-- Paso 2 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Posiciona tu mano correctamente</h3>
+                    <p class="step-description">
+                        Coloca tu mano derecha frente a la cámara a una distancia de 40-60 cm. Mantén la mano abierta y visible. Verás puntos de seguimiento en tu mano cuando el sistema la detecte correctamente.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Posicionamiento de la mano</div>
+                    <!-- <img src="{% static 'board/images/paso2.jpg' %}" alt="Paso 2"> -->
+                </div>
+            </div>
+
+            <!-- Paso 3 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Selecciona tu herramienta</h3>
+                    <p class="step-description">
+                        En la barra de herramientas superior encontrarás opciones como lápiz, pincel, borrador y más. Para hacer clic  levanta el dedo indice y dedo medio juntos (los demás dedos cerrados) y dirijete a la herramienta que desees utilizar para activarla.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Seleccionar herramienta</div>
+                    <!-- <img src="{% static 'board/images/paso3.jpg' %}" alt="Paso 3"> -->
+                </div>
+            </div>
+
+            <!-- Paso 4 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Mover cursor</h3>
+                    <p class="step-description">
+                        Para mover el cursor sin dibujar, junta el dedo índice y el dedo medio (los demás dedos cerrados). Esto te permite navegar por el lienzo sin dejar rastro.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Mover cursor</div>
+                    <!-- <img src="{% static 'board/images/paso4.jpg' %}" alt="Paso 4"> -->
+                </div>
+            </div>
+
+            <!-- Paso 5 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">5</div>
+                    <h3 class="step-title">Dibuja libremente</h3>
+                    <p class="step-description">
+                        Para dibujar, levanta solo tu dedo índice (los demás dedos cerrados). Mueve el dedo índice por el aire y verás cómo se dibuja en el lienzo siguiendo el movimiento de tu dedo.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Dibujando</div>
+                    <!-- <img src="{% static 'board/images/paso5.jpg' %}" alt="Paso 5"> -->
+                </div>
+            </div>
+
+            <!-- Paso 6 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">6</div>
+                    <h3 class="step-title">Ajusta el grosor</h3>
+                    <p class="step-description">
+                        Para ajustar el grosor del trazo, junta el dedo índice y el pulgar (gesto de pellizco). Separa o junta los dedos para aumentar o disminuir el grosor del pincel.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Herramienta borrador</div>
+                    <!-- <img src="{% static 'board/images/paso6.jpg' %}" alt="Paso 6"> -->
+                </div>
+            </div>
+
+            <!-- Paso 7 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">7</div>
+                    <h3 class="step-title">Elige el color</h3>
+                    <p class="step-description">
+                        Para cambiar el color del pincel,  junta el dedo índice y el dedo medio (los demás dedos cerrados). Esto abrirá la paleta de colores. Mantén el gesto y mueve la mano sobre el color deseado para seleccionarlo.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Seleccionar color</div>
+                    <!-- <img src="{% static 'board/images/paso7.jpg' %}" alt="Paso 7"> -->
+                </div>
+            </div>
+
+            <!-- Paso 8 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">8</div>
+                    <h3 class="step-title">Agregar nuevo lienzo</h3>
+                    <p class="step-description">
+                        Si deseas empezar un nuevo lienzo, utiliza el botón "Nuevo". 
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Guardar dibujo</div>
+                    <!-- <img src="{% static 'board/images/paso8.jpg' %}" alt="Paso 8"> -->
+                </div>
+            </div>
+
+            <!-- Paso 9 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">9</div>
+                    <h3 class="step-title">Guarda tu dibujo</h3>
+                    <p class="step-description">
+                        Una vez que estés satisfecho con tu creación, haz clic con el dedo indice y dedo medio juntos (los demás dedos cerrados)  "Guardar" para almacenar tu dibujo. Asigna un nombre descriptivo para encontrarlo fácilmente después.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Descargar</div>
+                    <!-- <img src="{% static 'board/images/paso9.jpg' %}" alt="Paso 9"> -->
+                </div>
+            </div>
+
+            <!-- Paso 10 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">10</div>
+                    <h3 class="step-title">Explora la galería</h3>
+                    <p class="step-description">
+                        Visita la galería para ver todos tus dibujos guardados. Desde ahí podrás editarlos nuevamente con gestos, eliminarlos o descargarlos para compartir con otros.Visita la galería para ver todos tus dibujos guardados. Desde ahí podrás editarlos, eliminarlos o compartirlos con otros usuarios de VirtualBoard.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Galería</div>
+                    <!-- <img src="{% static 'board/images/paso10.jpg' %}" alt="Paso 10"> -->
+                </div>
+            </div>
+
+            <!-- Paso 11 -->
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-number">11</div>
+                    <h3 class="step-title">Descarga como imagen</h3>
+                    <p class="step-description">
+                        Puedes descargar tu dibujo como archivo PNG o JPG haciendo clic con el dedo indice y dedo medio juntos (los demás dedos cerrados)  en el botón de descarga.
+                    </p>
+                </div>
+                <div class="step-image">
+                    <div class="step-image-placeholder">Imagen: Descargar</div>
+                    <!-- <img src="{% static 'board/images/paso10.jpg' %}" alt="Paso 10"> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -8,47 +8,67 @@
     <style>
         body {
             margin: 0;
-            background-color: #f3f4f6;
+            background-color: #f3f4f6; /* color original */
             color: #1f2937;
             font-family: "Inter", sans-serif;
             overflow: hidden;
         }
+
         .container {
             display: flex;
             height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #f3f4f6;
         }
+
+        /* Panel lateral de cámara */
         .left-panel {
-            width: 25%;
-            background: #e5e7eb;
+            flex: 0 0 25%;
+            background: #e5e7eb; /* color original */
             display: flex;
             align-items: center;
             justify-content: center;
             border-right: 2px solid #d1d5db;
+            box-sizing: border-box;
         }
+
         #camera {
             width: 90%;
-            border-radius: 12px;
+            height: auto;
+            max-height: 95%;
+            aspect-ratio: 4 / 3;
+            border-radius: 10px;
             border: 2px solid #9ca3af;
             background: #fff;
+            object-fit: contain; /* mantiene proporción */
         }
+
+        /* Panel principal */
         .main-panel {
-            flex-grow: 1;
-            position: relative;
-            background: #f9fafb;
+            flex: 1;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+            background: #f9fafb; /* color original */
             overflow: hidden;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
         }
+
+        /* Pizarra (video principal) */
         #video {
             width: 90%;
-            max-height: 85vh;
-            border-radius: 12px;
+            height: 90%;
+            background: #f9fafb; /* mismo color que fondo, oculta bordes */
             border: 2px solid #d1d5db;
-            object-fit: cover;
-            background: #fff;
+            border-radius: 12px;
+            display: block;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
         }
+
+        /* Indicador del puntero */
         #pointer {
             position: absolute;
             width: 14px;
@@ -58,6 +78,10 @@
             pointer-events: none;
             display: none;
             z-index: 20;
+        }
+
+        img, video, canvas {
+            display: block;
         }
     </style>
 </head>
@@ -79,35 +103,11 @@ async function updatePointer() {
     try {
         const res = await fetch("{% url 'pointer_data' %}");
         const data = await res.json();
-        const pointer = document.getElementById("pointer");
 
-        // 🔹 Si se detecta una redirección, enviamos al home
+        // Solo redirección, sin puntero HTML
         if (data.redirect && data.url) {
-            // 🔹 Avisar al backend que ya redirigimos
             await fetch("{% url 'reset_redirect' %}", { method: "POST" });
-
-            // 🔹 Redirigir al Home
             window.location.href = data.url;
-            return;
-        }
-
-        const baseWidth = 1280;
-        const baseHeight = 720;
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
-
-        const x = (data.x / baseWidth) * screenW * 1.45;
-        const y = (data.y / baseHeight) * screenH;
-
-        const xClamped = Math.min(Math.max(x, 5), screenW - 5);
-        const yClamped = Math.min(Math.max(y, 5), screenH - 5);
-
-        if (data.mode === "select") {
-            pointer.style.display = "block";
-            pointer.style.left = `${xClamped}px`;
-            pointer.style.top = `${yClamped}px`;
-        } else {
-            pointer.style.display = "none";
         }
     } catch (err) {
         console.error("Error puntero:", err);
