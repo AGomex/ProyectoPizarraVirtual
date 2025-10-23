@@ -15,15 +15,12 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            /* Usa tu imagen de fondo aquí */
             background: url("{% static 'board/css/FondoSistema.jpg' %}") center center / cover no-repeat;
-            /* Fallback por si no carga la imagen */
             min-height: 100vh;
             padding: 40px 20px;
             position: relative;
         }
 
-        /* Overlay opcional para mejor contraste */
         body::before {
             content: '';
             position: fixed;
@@ -246,6 +243,47 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .options-menu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .menu-dropdown a {
+            display: block;
+            padding: 10px 15px;
+            color: #1e293b;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .menu-dropdown a:hover {
+            background: #f1f5f9;
+        }
+
+        .drawing-card {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -277,93 +315,69 @@
 
         <!-- Grid de galería -->
         <div class="gallery-grid" id="galleryGrid">
-            <!-- Ejemplo de cards (estos se generarán dinámicamente) -->
-            <div class="drawing-card">
-                <div class="drawing-image">
-                    <img src="https://via.placeholder.com/300x300/e2e8f0/64748b?text=Dibujo+1" alt="Dibujo 1">
-                </div>
-                <div class="drawing-info">
-                    <div class="drawing-title">Dibujo 1</div>
-                    <div class="drawing-date">Hace 2 horas</div>
-                </div>
-            </div>
+            {% for drawing in drawings %}
+                <div class="drawing-card">
+                    <div class="drawing-image" onclick="window.location.href='{% url 'canvas' drawing.id %}'">
+                        {% if drawing.thumbnail %}
+                            <img src="{{ drawing.thumbnail.url }}?v={{ drawing.updated_at.timestamp }}" alt="{{ drawing.name }}">
+                        {% else %}
+                            <img src="{% static 'board/img/placeholder.png' %}" alt="Sin miniatura">
+                        {% endif %}
+                    </div>
+                    <div class="drawing-info">
+                        <div class="drawing-title">
+                            <a href="{% url 'edit_drawing' drawing.id %}" style="color: #1e293b; text-decoration: none">
+                                {{ drawing.name }}
+                            </a>
+                        </div>
+                        <div class="drawing-date">{{ drawing.updated_at|date:"d/m/Y H:i" }}</div>
 
-            <div class="drawing-card">
-                <div class="drawing-image">
-                    <img src="https://via.placeholder.com/300x300/e2e8f0/64748b?text=Dibujo+2" alt="Dibujo 2">
+                        <!-- Menú de opciones -->
+                        <div class="options-menu">
+                            <button class="menu-button">⋮</button>
+                            <div class="menu-dropdown">
+                                <a href="{% url 'edit_drawing' drawing.id %}">✏️ Editar</a>
+                                <a href="{% url 'delete_drawing' drawing.id %}" onclick="return confirm('¿Eliminar este dibujo?')">🗑️ Eliminar</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="drawing-info">
-                    <div class="drawing-title">Dibujo 2</div>
-                    <div class="drawing-date">Hace 5 horas</div>
+            {% empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎨</div>
+                    <div class="empty-state-text">No hay dibujos aún</div>
+                    <div class="empty-state-subtext">Comienza a crear tu primera obra maestra</div>
                 </div>
-            </div>
-
-            <div class="drawing-card">
-                <div class="drawing-image">
-                    <img src="https://via.placeholder.com/300x300/e2e8f0/64748b?text=Dibujo+3" alt="Dibujo 3">
-                </div>
-                <div class="drawing-info">
-                    <div class="drawing-title">Dibujo 3</div>
-                    <div class="drawing-date">Hace 1 día</div>
-                </div>
-            </div>
-
-            <div class="drawing-card">
-                <div class="drawing-image">
-                    <img src="https://via.placeholder.com/300x300/e2e8f0/64748b?text=Dibujo+4" alt="Dibujo 4">
-                </div>
-                <div class="drawing-info">
-                    <div class="drawing-title">Dibujo 4</div>
-                    <div class="drawing-date">Hace 2 días</div>
-                </div>
-            </div>
-
-            <div class="drawing-card">
-                <div class="drawing-image">
-                    <img src="https://via.placeholder.com/300x300/e2e8f0/64748b?text=Dibujo+5" alt="Dibujo 5">
-                </div>
-                <div class="drawing-info">
-                    <div class="drawing-title">Dibujo 5</div>
-                    <div class="drawing-date">Hace 3 días</div>
-                </div>
-            </div>
-
-            <div class="drawing-card">
-                <div class="drawing-image">
-                    <img src="https://via.placeholder.com/300x300/e2e8f0/64748b?text=Dibujo+6" alt="Dibujo 6">
-                </div>
-                <div class="drawing-info">
-                    <div class="drawing-title">Dibujo 6</div>
-                    <div class="drawing-date">Hace 1 semana</div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
-
-        <!-- Estado vacío (mostrar cuando no hay dibujos) -->
-        <!-- <div class="empty-state">
-            <div class="empty-state-icon">🎨</div>
-            <div class="empty-state-text">No hay dibujos aún</div>
-            <div class="empty-state-subtext">Comienza a crear tu primera obra maestra</div>
-        </div> -->
     </div>
 
     <script>
         // Funcionalidad de búsqueda básica
-        const searchInput = document.getElementById('searchInput');
-        const cards = document.querySelectorAll('.drawing-card');
+        const searchInput = document.getElementById('searchInput')
+        const cards = document.querySelectorAll('.drawing-card')
 
         searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
+            const searchTerm = e.target.value.toLowerCase()
             
             cards.forEach(card => {
-                const title = card.querySelector('.drawing-title').textContent.toLowerCase();
-                if (title.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
+                const title = card.querySelector('.drawing-title').textContent.toLowerCase()
+                card.style.display = title.includes(searchTerm) ? 'block' : 'none'
+            })
+        })
+
+        document.querySelectorAll('.menu-button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation()
+                const menu = btn.nextElementSibling
+                document.querySelectorAll('.menu-dropdown').forEach(m => m.style.display = 'none')
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block'
+            })
+        })
+
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.menu-dropdown').forEach(m => m.style.display = 'none')
+        })
     </script>
 </body>
 </html>

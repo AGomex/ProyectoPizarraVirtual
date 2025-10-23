@@ -8,7 +8,7 @@
     <style>
         body {
             margin: 0;
-            background-color: #f3f4f6; /* color original */
+            background-color: #f3f4f6;
             color: #1f2937;
             font-family: "Inter", sans-serif;
             overflow: hidden;
@@ -25,7 +25,7 @@
         /* Panel lateral de cámara */
         .left-panel {
             flex: 0 0 25%;
-            background: #e5e7eb; /* color original */
+            background: #e5e7eb;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -41,7 +41,7 @@
             border-radius: 10px;
             border: 2px solid #9ca3af;
             background: #fff;
-            object-fit: contain; /* mantiene proporción */
+            object-fit: contain;
         }
 
         /* Panel principal */
@@ -50,7 +50,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f9fafb; /* color original */
+            background: #f9fafb;
             overflow: hidden;
             padding: 0;
             margin: 0;
@@ -61,14 +61,14 @@
         #video {
             width: 90%;
             height: 90%;
-            background: #f9fafb; /* mismo color que fondo, oculta bordes */
+            background: #f9fafb;
             border: 2px solid #d1d5db;
             border-radius: 12px;
             display: block;
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
         }
 
-        /* Indicador del puntero */
+        /* Indicador del puntero (no visible por ahora) */
         #pointer {
             position: absolute;
             width: 14px;
@@ -94,7 +94,11 @@
 
     <!-- Pizarra -->
     <div class="main-panel">
-        <img id="video" src="{% url 'video_feed' %}" alt="Pizarra">
+        {% if drawing %}
+            <img id="video" src="{% url 'video_feed' drawing.id %}" alt="Pizarra">
+        {% else %}
+            <img id="video" src="{% url 'video_feed_blank' %}" alt="Pizarra">
+        {% endif %}
     </div>
 </div>
 
@@ -104,7 +108,7 @@ async function updatePointer() {
         const res = await fetch("{% url 'pointer_data' %}");
         const data = await res.json();
 
-        // Solo redirección, sin puntero HTML
+        // Si hay redirección activada
         if (data.redirect && data.url) {
             await fetch("{% url 'reset_redirect' %}", { method: "POST" });
             window.location.href = data.url;
@@ -114,6 +118,14 @@ async function updatePointer() {
     }
 }
 setInterval(updatePointer, 100);
+
+// 🔁 Fuerza recarga del video al volver o cambiar dibujo
+window.addEventListener("pageshow", () => {
+  const video = document.getElementById("video");
+  if (video) {
+      video.src = video.src.split("?")[0] + "?t=" + Date.now();
+  }
+});
 </script>
 
 </body>

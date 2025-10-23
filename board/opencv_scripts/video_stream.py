@@ -6,14 +6,13 @@ from django.http import JsonResponse
 from django.conf import settings
 import os
 from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
 
 # 🔹 Importar acciones
-from board.actions import color_action
-from board.actions.home_action import execute_home_action  # si lo usas, mantenlo
+from board.actions import color_action, save_action, undo_redo_action
 
 mp_hands = mp.solutions.hands
 
+# Variables globales
 color = color_action.get_current_color()
 thickness = 5
 prev_point = None
@@ -21,16 +20,25 @@ mode = "draw"
 canvas = None
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 lock = Lock()
+current_points = []
 
 last_frame = None
 last_canvas = None
 
-pointer_data = {"x": 0, "y": 0, "mode": "draw", "action": None, "redirect": False, "url": None}
+pointer_data = {
+    "x": 0,
+    "y": 0,
+    "mode": "draw",
+    "action": None,
+    "redirect": False,
+    "url": None
+}
 
 BUTTONS = [
-    ("home.png", "home"),
+    ("undo.png", "undo"),
+    ("redo.png", "redo"),
     ("brush.png", "brush"),
-    ("color.png", "color"),   # el recuadro reemplazará este icono
+    ("color.png", "color"),
     ("shapes.png", "shapes"),
     ("enhance.png", "enhance"),
     ("eraser.png", "eraser"),
@@ -38,20 +46,24 @@ BUTTONS = [
     ("save.png", "save")
 ]
 
-
 # ---------------------- Funciones auxiliares ----------------------
 
 def get_finger_status(hand_landmarks):
     """Devuelve lista [pulgar, índice, medio, anular, meñique] (1=levantado)."""
     fingers = []
     tip_ids = [4, 8, 12, 16, 20]
-    fingers.append(1 if hand_landmarks.landmark[tip_ids[0]].x < hand_landmarks.landmark[tip_ids[0] - 1].x else 0)
+    fingers.append(1 if hand_landmarks.landmark[tip_ids[0]].x <
+                    hand_landmarks.landmark[tip_ids[0] - 1].x else 0)
     for i in range(1, 5):
-        fingers.append(1 if hand_landmarks.landmark[tip_ids[i]].y < hand_landmarks.landmark[tip_ids[i] - 2].y else 0)
+        fingers.append(
+            1 if hand_landmarks.landmark[tip_ids[i]].y <
+            hand_landmarks.landmark[tip_ids[i] - 2].y else 0
+        )
     return fingers
 
 
-def draw_grid_background(h, w, spacing= 20):
+def draw_grid_background(h, w, spacing=20):
+    """Dibuja una cuadrícula suave como fondo."""
     bg = np.ones((h, w, 3), np.uint8) * 255
     color_line = (220, 220, 220)
     for y in range(0, h, spacing):
@@ -62,24 +74,22 @@ def draw_grid_background(h, w, spacing= 20):
 
 
 def draw_toolbar(frame, h, w, active_index=None, current_color=(0, 0, 0)):
-    """Dibuja la barra de herramientas con los íconos perfectamente centrados."""
+    """Dibuja la barra de herramientas con íconos centrados."""
     toolbar_height = int(h * 0.18)
     section_width = w // len(BUTTONS)
 
     for i, (icon_file, action_name) in enumerate(BUTTONS):
-        # --- Zona del botón ---
+        # Zona del botón
         x1 = i * section_width
         x2 = x1 + section_width
         color_box = (215, 235, 255) if i == active_index else (245, 245, 245)
-
         cv2.rectangle(frame, (x1, 0), (x2, toolbar_height), color_box, -1)
         cv2.rectangle(frame, (x1, 0), (x2, toolbar_height), (180, 180, 180), 2)
 
-        # --- Coordenadas centradas ---
         center_x = x1 + section_width // 2
         center_y = toolbar_height // 2
 
-        # 🔹 Si es el botón de color, dibujar cuadro centrado
+        # Si es el botón de color, dibujar recuadro
         if action_name == "color":
             box_size = 45
             x_offset = center_x - box_size // 2
@@ -92,31 +102,25 @@ def draw_toolbar(frame, h, w, active_index=None, current_color=(0, 0, 0)):
                           (80, 80, 80), 2)
             continue
 
-        # --- Ruta del icono ---
+        # Ruta del icono
         icon_path = os.path.join(settings.BASE_DIR, "board", "static", "board", "icons", icon_file)
         if not os.path.exists(icon_path):
             cv2.putText(frame, "?", (center_x - 10, center_y + 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             continue
 
-        # --- Leer icono ---
+        # Leer icono
         icon = cv2.imread(icon_path, cv2.IMREAD_UNCHANGED)
         if icon is None:
             continue
 
-        # --- Redimensionar ---
+        # Redimensionar
         icon_size = 45
         icon = cv2.resize(icon, (icon_size, icon_size))
-
-        # --- Coordenadas centradas ---
         x_offset = center_x - icon_size // 2
         y_offset = center_y - icon_size // 2
 
-        # --- Verificar límites ---
-        if y_offset + icon_size > frame.shape[0] or x_offset + icon_size > frame.shape[1]:
-            continue
-
-        # --- Renderizado con transparencia ---
+        # Dibujar con transparencia
         if icon.shape[2] == 4:
             alpha = icon[:, :, 3] / 255.0
             for c in range(3):
@@ -127,15 +131,39 @@ def draw_toolbar(frame, h, w, active_index=None, current_color=(0, 0, 0)):
         else:
             frame[y_offset:y_offset + icon_size, x_offset:x_offset + icon_size] = icon
 
-
 # ---------------------- Flujo principal ----------------------
 
-def generate_frames():
-    global prev_point, canvas, mode, color, last_frame, last_canvas, pointer_data
+# video_stream.py (solo la función generate_frames completa)
 
-    with mp_hands.Hands(max_num_hands=1,
-                        min_detection_confidence=0.7,
-                        min_tracking_confidence=0.6) as hands:
+def generate_frames(drawing_id=None):
+    """
+    Genera el stream de video para un dibujo existente o un lienzo en blanco.
+    Garantiza que solo haya un lienzo vacío activo y evita errores de canvas=None.
+    """
+    global prev_point, canvas, mode, color, last_frame, last_canvas, pointer_data, current_points
+
+    # 🔹 Limpiar lienzo anterior siempre al cambiar de contexto
+    canvas = None
+
+    # 🔹 Cargar el dibujo existente o crear uno nuevo vacío
+    if drawing_id is not None:
+        print(f"🖼️ Cargando dibujo ID={drawing_id}")
+        save_action.load_drawing(drawing_id)
+    else:
+        print("🆕 Iniciando nuevo lienzo en blanco...")
+        # Si ya hay uno activo, lo reutilizamos (evita múltiples en DB)
+        if save_action.current_drawing is None:
+            save_action.start_new_drawing(name="Nuevo Dibujo")
+        else:
+            print(f"⚠️ Ya existe un lienzo activo ({save_action.current_drawing.id}), se reutiliza.")
+            save_action.reset_strokes()  # limpia trazos pero mantiene el dibujo activo
+
+    # 🔹 Iniciar detección de manos
+    with mp_hands.Hands(
+        max_num_hands=1,
+        min_detection_confidence=0.7,
+        min_tracking_confidence=0.6
+    ) as hands:
 
         while True:
             success, frame = cap.read()
@@ -145,8 +173,23 @@ def generate_frames():
             frame = cv2.flip(frame, 1)
             h, w, _ = frame.shape
 
+            # 🔹 Crear lienzo base si no existe o cambia el tamaño
             if canvas is None or canvas.shape[:2] != (h, w):
+                print("[INFO] Inicializando lienzo base con cuadrícula.")
                 canvas = draw_grid_background(h, w)
+
+                # 🔸 Si hay trazos guardados, dibujarlos encima de la cuadrícula
+                if hasattr(save_action, "current_strokes") and len(save_action.current_strokes) > 0:
+                    print(f"🎨 Renderizando {len(save_action.current_strokes)} trazos guardados con cuadrícula...")
+                    strokes_img = save_action.render_strokes(save_action.current_strokes, w, h)
+                    if strokes_img is not None:
+                        mask = strokes_img < 250  # trazos que no son blancos
+                        canvas[mask] = strokes_img[mask]
+
+            # 🔹 Si por alguna razón sigue sin canvas, se inicializa vacío
+            if canvas is None:
+                print("[WARN] Canvas vacío detectado, creando uno nuevo.")
+                canvas = np.zeros((480, 640, 3), dtype=np.uint8)
 
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = hands.process(rgb)
@@ -156,61 +199,95 @@ def generate_frames():
             active_button = None
             pointer_visible = False
 
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    fingers = get_finger_status(hand_landmarks)
-                    index_finger = hand_landmarks.landmark[8]
-                    cx, cy = int(index_finger.x * w), int(index_finger.y * h)
-                    pointer_visible = True
+            try:
+                if results.multi_hand_landmarks:
+                    for hand_landmarks in results.multi_hand_landmarks:
+                        fingers = get_finger_status(hand_landmarks)
+                        index_finger = hand_landmarks.landmark[8]
+                        cx, cy = int(index_finger.x * w), int(index_finger.y * h)
+                        pointer_visible = True
 
-                    if all(fingers):
-                        mode = "select"
-                    elif fingers[1] and fingers[2] and not any(fingers[3:]):
-                        mode = "draw"
+                        # Modo de interacción
+                        if all(fingers):
+                            mode = "select"
+                        elif fingers[1] and fingers[2] and not any(fingers[3:]):
+                            mode = "draw"
 
-                    if mode == "draw" and fingers[1] and not any(fingers[2:]):
-                        if prev_point is not None:
-                            cv2.line(canvas, prev_point, (cx, cy), color, thickness)
-                        prev_point = (cx, cy)
+                        # 🔸 Dibujar trazos
+                        if mode == "draw" and fingers[1] and not any(fingers[2:]):
+                            if prev_point is not None:
+                                cv2.line(canvas, prev_point, (cx, cy), color, thickness)
+                                current_points.append([cx, cy])
+                            else:
+                                current_points = [[cx, cy]]
+                            prev_point = (cx, cy)
+                        else:
+                            # Soltar trazo al dejar de dibujar
+                            if len(current_points) > 1:
+                                stroke = save_action.add_stroke(current_points, color, thickness)
+                                undo_redo_action.register_stroke(stroke)
+                            current_points = []
+                            prev_point = None
 
-                    else:
-                        prev_point = None
-                        toolbar_height = int(h * 0.18)
-                        if cy < toolbar_height:
-                            section_width = w // len(BUTTONS)
-                            button_index = cx // section_width
-                            if 0 <= button_index < len(BUTTONS):
-                                active_button = button_index
-                                action_name = BUTTONS[button_index][1]
-                                action_detected = action_name
+                            # 🔹 Botones superiores
+                            toolbar_height = int(h * 0.18)
+                            if cy and cy < toolbar_height:
+                                section_width = w // len(BUTTONS)
+                                button_index = cx // section_width
+                                if 0 <= button_index < len(BUTTONS):
+                                    active_button = button_index
+                                    action_name = BUTTONS[button_index][1]
+                                    action_detected = action_name
 
-                                if action_name == "home":
-                                    pointer_data["redirect"] = True
-                                    pointer_data["url"] = "/"
-                                elif action_name == "color":
-                                    color_action.start_color_selection()
-                                    pointer_data["redirect"] = False
-            else:
-                prev_point = None
+                                    if action_name == "undo":
+                                        if undo_redo_action.undo_last_stroke():
+                                            canvas = draw_grid_background(h, w)
+                                            strokes_img = save_action.render_strokes(save_action.current_strokes, w, h)
+                                            if strokes_img is not None:
+                                                mask = strokes_img < 250
+                                                canvas[mask] = strokes_img[mask]
+                                    elif action_name == "redo":
+                                        if undo_redo_action.redo_last_stroke():
+                                            canvas = draw_grid_background(h, w)
+                                            strokes_img = save_action.render_strokes(save_action.current_strokes, w, h)
+                                            if strokes_img is not None:
+                                                mask = strokes_img < 250
+                                                canvas[mask] = strokes_img[mask]
+                                    elif action_name == "color":
+                                        color_action.start_color_selection()
+                                    elif action_name == "save":
+                                        save_action.save_current_drawing()
+                                        undo_redo_action.reset_history()
 
-            # --- Actualizar color mientras esté en modo selección ---
+                else:
+                    # Sin mano visible → cerrar trazo pendiente
+                    if len(current_points) > 1:
+                        stroke = save_action.add_stroke(current_points, color, thickness)
+                        undo_redo_action.register_stroke(stroke)
+                    current_points = []
+                    prev_point = None
+
+            except Exception as e:
+                print(f"[ERROR en frame]: {e}")
+                continue
+
+            # 🔹 Actualizar color dinámico
             if color_action.color_select_mode:
                 color = color_action.update_color_rotation()
             else:
                 color = color_action.get_current_color()
 
-            # --- Confirmar color al abrir la mano ---
+            # 🔹 Confirmar color con mano abierta
             if results.multi_hand_landmarks and color_action.color_select_mode:
                 for hand_landmarks in results.multi_hand_landmarks:
                     fingers = get_finger_status(hand_landmarks)
                     if all(fingers):
                         color_action.stop_color_selection()
 
-            # --- Renderizado final ---
+            # 🔹 Renderizado final
             output = canvas.copy()
             draw_toolbar(output, h, w, active_index=active_button, current_color=color)
 
-            # Puntero visible
             if pointer_visible and cx is not None and cy is not None:
                 pointer_color = (0, 0, 255) if mode == "select" else (0, 255, 0)
                 cv2.circle(output, (cx, cy), 6, pointer_color, -1)
@@ -221,8 +298,8 @@ def generate_frames():
                 last_canvas = output.copy()
 
             ret, buffer = cv2.imencode('.jpg', output)
-            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
+            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' +
+                   buffer.tobytes() + b'\r\n')
 
 # ---------------------- Cámara lateral ----------------------
 
@@ -234,15 +311,14 @@ def generate_camera_frames():
         with lock:
             frame = last_frame.copy()
         ret, buffer = cv2.imencode('.jpg', frame)
-        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
+        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' +
+               buffer.tobytes() + b'\r\n')
 
 # ---------------------- Datos del puntero ----------------------
 
 def get_pointer_data(request):
     global pointer_data
     return JsonResponse(pointer_data)
-
 
 @csrf_exempt
 def reset_redirect(request):
