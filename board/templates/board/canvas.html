@@ -117,13 +117,24 @@ async function updatePointer() {
         console.error("Error puntero:", err);
     }
 }
-setInterval(updatePointer, 100);
+setInterval(updatePointer, 1000);
 
 // 🔁 Fuerza recarga del video al volver o cambiar dibujo
 window.addEventListener("pageshow", () => {
   const video = document.getElementById("video");
   if (video) {
       video.src = video.src.split("?")[0] + "?t=" + Date.now();
+  }
+});
+
+window.addEventListener("beforeunload", async (event) => {
+  // Consulta al backend si hay cambios sin guardar
+  const res = await fetch("/check-unsaved/");
+  const data = await res.json();
+  
+  if (data.unsaved) {
+    event.preventDefault();
+    event.returnValue = "Tienes cambios sin guardar. ¿Seguro que deseas salir?";
   }
 });
 </script>

@@ -7,7 +7,7 @@ import os
 # Estado en memoria para la sesión actual
 current_strokes = []
 current_drawing = None
-
+unsaved_changes = False
 
 # ===============================
 # 🔹 RESET Y GESTIÓN DE ESTADO
@@ -32,19 +32,13 @@ def reset_globals():
 
 def start_new_drawing(name="Untitled", width=640, height=480):
     """
-    Crea un nuevo Drawing **solo si no existe uno activo**.
-    Devuelve current_drawing.
+    Prepara un nuevo lienzo temporal sin crear registro en la base de datos todavía.
     """
     global current_strokes, current_drawing
-
-    if current_drawing is not None:
-        print(f"[INFO] Ya existe un dibujo activo (ID={current_drawing.id}), no se crea uno nuevo.")
-        return current_drawing
-
     current_strokes = []
-    current_drawing = Drawing.objects.create(name=name, width=width, height=height)
-    print(f"[SAVE] Nuevo dibujo creado -> ID={current_drawing.id}")
-    return current_drawing
+    current_drawing = None
+    print("[INFO] Nuevo lienzo temporal creado (sin guardar aún).")
+    return None
 
 
 def load_drawing(drawing_id):
@@ -65,59 +59,63 @@ def load_drawing(drawing_id):
 # ===============================
 
 def add_stroke(points, color, thickness):
-    """Agrega un trazo al dibujo actual y guarda en DB sin bloquear el flujo."""
-    global current_strokes, current_drawing
+    global current_strokes, current_drawing, unsaved_changes
 
-    if not current_drawing:
-        print("[ERROR] No hay dibujo activo para agregar trazo.")
-        return None  # importante: devolver None si no hay dibujo
-
-    # 🔸 Asegurar que el color se guarde como lista (no numpy)
     stroke = {
         "points": points,
         "color": [int(c) for c in color],
         "thickness": int(thickness),
     }
-
     current_strokes.append(stroke)
-    current_drawing.strokes = current_strokes
-    current_drawing.save(update_fields=["strokes"])
+    unsaved_changes = True
 
     print(f"[TRACE] Trazo agregado: total {len(current_strokes)} trazos.")
-    return stroke  
+    return stroke
 
 
-
-def save_current_drawing():
-    """Guarda el dibujo actual y actualiza la miniatura."""
-    global current_drawing, current_strokes
-
-    if current_drawing is None:
-        print("[⚠️] No hay dibujo activo para guardar.")
-        return None
+def save_current_drawing(name="Untitled", width=640, height=480):
+    """
+    Guarda el dibujo actual en la base de datos solo si hay trazos.
+    Si no existe un Drawing aún, lo crea.
+    """
+    global current_drawing, current_strokes, unsaved_changes
 
     if not current_strokes:
-        print(f"[⚠️] Dibujo vacío '{current_drawing.name}' (ID: {current_drawing.id}), no se guardará.")
+        print("[⚠️] Dibujo vacío, no se guardará.")
         return None
 
-    # 🔹 Guardar trazos
-    current_drawing.strokes = current_strokes
-    current_drawing.updated_at = timezone.now()
-    current_drawing.save()
+    # 🔹 Crear nuevo dibujo si no existe
+    if current_drawing is None:
+        current_drawing = Drawing.objects.create(
+            name=name,
+            width=width,
+            height=height,
+            strokes=current_strokes,
+        )
+        print(f"[SAVE] Dibujo nuevo creado (ID={current_drawing.id})")
+    else:
+        # 🔹 Actualizar dibujo existente
+        current_drawing.strokes = current_strokes
+        current_drawing.save(update_fields=["strokes", "updated_at"])
+        print(f"[UPDATE] Dibujo existente actualizado (ID={current_drawing.id})")
 
-    # 🔹 Generar o actualizar miniatura
+    # 🔹 Generar miniatura
     try:
         img = render_strokes(current_strokes, current_drawing.width, current_drawing.height)
         thumb_path = os.path.join("media/thumbs", f"thumb_{current_drawing.id}.jpg")
         os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
         cv2.imwrite(thumb_path, img)
+
+        # Asignar ruta relativa para que Django pueda servirla
         current_drawing.thumbnail = f"thumbs/thumb_{current_drawing.id}.jpg"
         current_drawing.save(update_fields=["thumbnail"])
-        print(f"[🖼️] Miniatura actualizada para dibujo ID {current_drawing.id}")
+        print(f"[🖼️] Miniatura generada: {current_drawing.thumbnail}")
     except Exception as e:
         print(f"[ERROR] No se pudo generar miniatura: {e}")
 
-    print(f"[💾] Dibujo guardado correctamente: '{current_drawing.name}' (ID: {current_drawing.id})")
+    unsaved_changes = False
+
+    print(f"[💾] Dibujo guardado correctamente: '{current_drawing.name}' (ID={current_drawing.id})")
     return current_drawing
 
 

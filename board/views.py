@@ -10,6 +10,34 @@ import cv2
 import numpy as np
 import os
 from django.conf import settings
+from django.views.decorators.http import require_GET, require_POST
+
+@require_GET
+def check_unsaved_changes(request):
+    """
+    Devuelve si hay cambios sin guardar en el lienzo actual.
+    """
+    unsaved = getattr(save_action, "unsaved_changes", False)
+    return JsonResponse({"unsaved": unsaved})
+
+@require_POST
+def reset_unsaved(request):
+    """
+    Marca que ya no hay cambios sin guardar (por ejemplo, tras guardar o salir).
+    """
+    save_action.unsaved_changes = False
+    return JsonResponse({"status": "ok"})
+
+@require_POST
+def reset_redirect(request):
+    """
+    Endpoint auxiliar para resetear la redirección automática
+    después de ejecutar una acción con el puntero.
+    """
+    request.session["redirect"] = None
+    request.session["redirect_url"] = None
+    return JsonResponse({"status": "ok"})
+
 
 @csrf_exempt
 def save_drawing(request):
@@ -41,31 +69,28 @@ def home(request):
     return render(request, 'board/home.html')
 
 def canvas_view(request, drawing_id=None):
-    """
-    Vista principal del lienzo.
-    Si tiene un ID -> carga el dibujo existente.
-    Si no tiene ID -> abre un nuevo lienzo vacío (uno solo a la vez).
-    """
     drawing = None
 
+    # 🔸 Si entra con ID → editar existente
     if drawing_id is not None:
-        # 🔹 Cargar dibujo existente
         drawing = get_object_or_404(Drawing, pk=drawing_id)
-        print(f"🖼️ Cargando dibujo existente: {drawing.id} -> {drawing.name}")
+        print(f"🖼️ Cargando dibujo existente: {drawing.id}")
         save_action.load_drawing(drawing.id)
+
+    # 🔸 Si no hay ID → nuevo lienzo
     else:
-        # 🔹 Si no hay ID (nuevo lienzo)
-        if save_action.current_drawing is None:
-            print("🆕 No hay dibujo activo, creando nuevo lienzo vacío.")
-            save_action.start_new_drawing(name="Nuevo Dibujo Temporal")
-        else:
-            print(f"⚠️ Reutilizando lienzo activo (ID: {save_action.current_drawing.id})")
+        print("🆕 Creando nuevo dibujo temporal.")
+        # ⚠️ Si hay cambios sin guardar, reiniciar completamente
+        if save_action.current_drawing is not None and save_action.unsaved_changes:
+            print("⚠️ Hay cambios sin guardar. Creando nuevo dibujo independiente.")
+            save_action.reset_globals()
+        save_action.start_new_drawing(name="Nuevo Dibujo")
 
     return render(request, "board/canvas.html", {"drawing": drawing})
 
 
 def gallery_view(request):
-    drawings = Drawing.objects.order_by('-updated_at')[:9]
+    drawings = Drawing.objects.order_by('-updated_at')[:16]
 
     for drawing in drawings:
         thumb_dir = os.path.join(settings.MEDIA_ROOT, "thumbs")

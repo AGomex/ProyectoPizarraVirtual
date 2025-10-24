@@ -26,4 +26,8 @@ urlpatterns = [
     path("pointer-data/", get_pointer_data, name="pointer_data"),
     path("set_mode/<str:mode>/", views.set_mode, name="set_mode"),
     path("reset_redirect/", reset_redirect, name="reset_redirect"),
+    path("check-unsaved/", views.check_unsaved_changes, name="check_unsaved_changes"),
+    path("reset-unsaved/", views.reset_unsaved, name="reset_unsaved"),
+    path("reset-redirect/", views.reset_redirect, name="reset_redirect"),
+
 ]
