@@ -96,7 +96,7 @@ def save_current_drawing(name="Untitled", width=640, height=480):
     else:
         # 🔹 Actualizar dibujo existente
         current_drawing.strokes = current_strokes
-        current_drawing.save(update_fields=["strokes", "updated_at"])
+        current_drawing.save(update_fields=["name", "strokes", "updated_at"])
         print(f"[UPDATE] Dibujo existente actualizado (ID={current_drawing.id})")
 
     # 🔹 Generar miniatura

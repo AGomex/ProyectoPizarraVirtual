@@ -13,11 +13,23 @@ from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
 
 @require_GET
+# def check_unsaved_changes(request):
+#     """
+#     Devuelve si hay cambios sin guardar en el lienzo actual.
+#     """
+#     unsaved = getattr(save_action, "unsaved_changes", False)
+#     return JsonResponse({"unsaved": unsaved})
 def check_unsaved_changes(request):
     """
     Devuelve si hay cambios sin guardar en el lienzo actual.
     """
-    unsaved = getattr(save_action, "unsaved_changes", False)
+    # Si no hay trazos, no hay nada que guardar
+    if not save_action.current_strokes or len(save_action.current_strokes) == 0:
+        return JsonResponse({"unsaved": False})
+    
+    # Si hay trazos, verificar si están sin guardar
+    unsaved = getattr(save_action, "unsaved_changes", True)
+    
     return JsonResponse({"unsaved": unsaved})
 
 @require_POST
@@ -68,25 +80,34 @@ def get_drawing(request, pk):
 def home(request):
     return render(request, 'board/home.html')
 
+from django.shortcuts import render, get_object_or_404
+from .models import Drawing
+
 def canvas_view(request, drawing_id=None):
     drawing = None
 
-    # 🔸 Si entra con ID → editar existente
     if drawing_id is not None:
         drawing = get_object_or_404(Drawing, pk=drawing_id)
-        print(f"🖼️ Cargando dibujo existente: {drawing.id}")
+        print(f"🖼 Cargando dibujo existente: {drawing.id}")
         save_action.load_drawing(drawing.id)
-
-    # 🔸 Si no hay ID → nuevo lienzo
+    
     else:
         print("🆕 Creando nuevo dibujo temporal.")
-        # ⚠️ Si hay cambios sin guardar, reiniciar completamente
         if save_action.current_drawing is not None and save_action.unsaved_changes:
-            print("⚠️ Hay cambios sin guardar. Creando nuevo dibujo independiente.")
+            print("⚠ Hay cambios sin guardar. Creando nuevo dibujo independiente.")
             save_action.reset_globals()
         save_action.start_new_drawing(name="Nuevo Dibujo")
+    
+    # 🔹 Obtener los últimos dibujos para mostrar en el panel lateral
+    recent_drawings = Drawing.objects.order_by('-updated_at')
 
-    return render(request, "board/canvas.html", {"drawing": drawing})
+    # 🔹 Renderizar plantilla en todos los casos
+    return render(request, "board/canvas.html", {
+        "drawing": drawing,
+        "recent_drawings": recent_drawings
+    })
+
+
 
 
 def gallery_view(request):
@@ -100,7 +121,7 @@ def gallery_view(request):
             or not os.path.exists(thumb_path)
         )
         if needs_regen:
-            print(f"[🖼️] Regenerando miniatura para dibujo ID={drawing.id}...")
+            print(f"[🖼] Regenerando miniatura para dibujo ID={drawing.id}...")
             try:
                 img = save_action.render_strokes(
                     drawing.strokes,
@@ -155,7 +176,7 @@ def video_feed_blank(request):
     # 🔹 Si hay un dibujo cargado desde galería, NO lo reiniciamos
     if save_action.current_drawing is not None and save_action.current_drawing.id is None:
         # Solo si es un nuevo dibujo temporal
-        print(f"⚠️ Reutilizando lienzo temporal existente (ID temporal)")
+        print(f"⚠ Reutilizando lienzo temporal existente (ID temporal)")
         save_action.reset_strokes()
     else:
         print("🆕 Creando nuevo dibujo temporal.")
@@ -176,3 +197,58 @@ def set_mode(request, mode):
     current_mode = mode
     print(f"🟢 Modo cambiado a: {mode}")
     return JsonResponse({"status": "ok", "mode": mode})
+
+@csrf_exempt
+@require_POST
+def save_drawing_with_name(request):
+    """Guarda el dibujo con el nombre proporcionado por el usuario."""
+    try:
+        data = json.loads(request.body)
+        drawing_name = data.get("name", "Dibujo sin título").strip()
+        
+        if not drawing_name:
+            drawing_name = "Dibujo sin título"
+        
+        # Verificar si hay trazos
+        if not save_action.current_strokes or len(save_action.current_strokes) == 0:
+            return JsonResponse({
+                "success": False,
+                "message": "No se puede guardar un dibujo vacío"
+            })
+        
+        # 🔹 VERIFICAR SI YA EXISTE UN DIBUJO CON ESE NOMBRE (case-insensitive)
+        # Obtenemos todos los dibujos y comparamos manualmente en Python
+        all_drawings = Drawing.objects.all()
+
+        # Si estamos editando un dibujo existente, excluirlo
+        if save_action.current_drawing and save_action.current_drawing.id:
+            all_drawings = all_drawings.exclude(id=save_action.current_drawing.id)
+
+        # Comparar nombres en minúsculas
+        for drawing in all_drawings:
+            if drawing.name.lower() == drawing_name.lower():
+                return JsonResponse({
+                    "success": False,
+                    "message": f"Ya existe un dibujo con el nombre '{drawing_name}'. Por favor elige otro nombre."
+        })
+        
+        # Guardar
+        drawing = save_action.save_current_drawing(name=drawing_name)
+        
+        if drawing:
+            return JsonResponse({
+                "success": True,
+                "message": f"Dibujo '{drawing_name}' guardado correctamente",
+                "drawing_id": drawing.id
+            })
+        else:
+            return JsonResponse({
+                "success": False,
+                "message": "Error al guardar el dibujo"
+            })
+            
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": f"Error: {str(e)}"
+        }, status=500)

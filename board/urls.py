@@ -30,4 +30,6 @@ urlpatterns = [
     path("reset-unsaved/", views.reset_unsaved, name="reset_unsaved"),
     path("reset-redirect/", views.reset_redirect, name="reset_redirect"),
 
+    path('save-with-name/', views.save_drawing_with_name, name='save_with_name'),
+
 ]

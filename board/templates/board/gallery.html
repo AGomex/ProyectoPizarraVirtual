@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galería - Pizarra Virtual</title>
     <link href="{% static 'board/css/style.css' %}" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         * {
             margin: 0;
@@ -139,10 +143,11 @@
         .drawing-card {
             background: white;
             border-radius: 20px;
-            overflow: hidden;
+            overflow: visible; /* CAMBIO IMPORTANTE */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
         }
 
         .drawing-card:hover {
@@ -158,6 +163,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 20px 20px 0 0; /* AÑADIDO */
+            overflow: hidden; /* AÑADIDO */
         }
 
         .drawing-image img {
@@ -169,13 +176,28 @@
         .drawing-info {
             padding: 20px;
             background: white;
+            border-radius: 0 0 20px 20px; /* AÑADIDO */
+            overflow: visible; /* AÑADIDO */
+            position: relative; /* AÑADIDO */
+        }
+
+        /* Nueva estructura para título y botones */
+        .drawing-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
         }
 
         .drawing-title {
             font-size: 1.125rem;
             font-weight: 600;
             color: #1e293b;
-            margin-bottom: 8px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .drawing-date {
@@ -183,29 +205,151 @@
             color: #64748b;
         }
 
+        /* Menú de opciones mejorado */
+        .options-menu {
+            position: relative;
+            z-index: 10;
+        }
+
+        .menu-button {
+            background: transparent;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .menu-button:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .menu-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: visible; /* CAMBIADO */
+            z-index: 1000; /* AUMENTADO */
+            min-width: 160px;
+            border: 1px solid #e2e8f0;
+            padding: 6px 0; /* AÑADIDO */
+        }
+
+        .menu-dropdown.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #1e293b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            white-space: nowrap; /* AÑADIDO */
+            border-radius: 8px; /* AÑADIDO */
+            margin: 4px 8px; /* AÑADIDO para dar espacio */
+        }
+
+        .menu-dropdown a:hover {
+            background: #f8fafc;
+        }
+
+        .menu-dropdown a.edit {
+            color: #3b82f6;
+        }
+
+        .menu-dropdown a.edit:hover {
+            background: #dbeafe;
+        }
+
+        .menu-dropdown a.delete {
+            color: #ef4444;
+        }
+
+        .menu-dropdown a.delete:hover {
+            background: #fee2e2;
+        }
+
+        .menu-dropdown a svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0; /* AÑADIDO */
+        }
+
+        /* Estado vacío mejorado */
         .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 80px 20px;
+            min-height: 60vh;
             color: white;
+            grid-column: 1 / -1;
         }
 
         .empty-state-icon {
-            font-size: 5rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         .empty-state-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            letter-spacing: -0.5px;
         }
 
         .empty-state-subtext {
-            font-size: 1rem;
-            opacity: 0.8;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: 1.125rem;
+            opacity: 0.9;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            line-height: 1.6;
         }
 
         @media (max-width: 768px) {
@@ -231,58 +375,25 @@
             .drawing-image {
                 height: 250px;
             }
+
+            .empty-state-icon {
+                width: 150px;
+                height: 150px;
+            }
+
+            .empty-state-text {
+                font-size: 1.5rem;
+            }
+
+            .empty-state-subtext {
+                font-size: 1rem;
+            }
         }
 
         @media (max-width: 480px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
             .gallery-grid {
                 grid-template-columns: 1fr;
             }
-        }
-
-        .options-menu {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
-        .menu-button {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #64748b;
-        }
-
-        .menu-dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-
-        .menu-dropdown a {
-            display: block;
-            padding: 10px 15px;
-            color: #1e293b;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .menu-dropdown a:hover {
-            background: #f1f5f9;
-        }
-
-        .drawing-card {
-            position: relative;
         }
     </style>
 </head>
@@ -325,28 +436,45 @@
                         {% endif %}
                     </div>
                     <div class="drawing-info">
-                        <div class="drawing-title">
-                            <a href="{% url 'edit_drawing' drawing.id %}" style="color: #1e293b; text-decoration: none">
-                                {{ drawing.name }}
-                            </a>
-                        </div>
-                        <div class="drawing-date">{{ drawing.updated_at|date:"d/m/Y H:i" }}</div>
-
-                        <!-- Menú de opciones -->
-                        <div class="options-menu">
-                            <button class="menu-button">⋮</button>
-                            <div class="menu-dropdown">
-                                <a href="{% url 'edit_drawing' drawing.id %}">✏️ Editar</a>
-                                <a href="{% url 'delete_drawing' drawing.id %}" onclick="return confirm('¿Eliminar este dibujo?')">🗑️ Eliminar</a>
+                        <!-- Título y menú de opciones -->
+                        <div class="drawing-header">
+                            <div class="drawing-title">{{ drawing.name }}</div>
+                            <div class="options-menu">
+                                <button class="menu-button" onclick="toggleMenu(event, this)">
+                                    <!-- Icono 3 puntos verticales -->
+                                    <svg fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="5" r="2"/>
+                                        <circle cx="12" cy="12" r="2"/>
+                                        <circle cx="12" cy="19" r="2"/>
+                                    </svg>
+                                </button>
+                                <div class="menu-dropdown">
+                                    <a href="#" class="edit" onclick="editDrawing(event, '{{ drawing.id }}', '{% url 'edit_drawing' drawing.id %}')">
+                                        <!-- Icono Editar -->
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                        <span>Editar</span>
+                                    </a>
+                                    <a href="#" class="delete" onclick="deleteDrawing(event, '{{ drawing.id }}', '{% url 'delete_drawing' drawing.id %}')">
+                                        <!-- Icono Eliminar -->
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        <span>Eliminar</span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
+                        <div class="drawing-date">{{ drawing.updated_at|date:"d/m/Y H:i" }}</div>
                     </div>
                 </div>
             {% empty %}
                 <div class="empty-state">
-                    <div class="empty-state-icon">🎨</div>
+                    <!-- Icono PNG/JPG -->
+                    <img src="{% static 'board/icons/paleta-color.png' %}" alt="Sin dibujos" class="empty-state-icon">
                     <div class="empty-state-text">No hay dibujos aún</div>
-                    <div class="empty-state-subtext">Comienza a crear tu primera obra maestra</div>
+                    <div class="empty-state-subtext">Comienza a crear tu primera obra maestra en la pizarra virtual</div>
                 </div>
             {% endfor %}
         </div>
@@ -366,18 +494,142 @@
             })
         })
 
-        document.querySelectorAll('.menu-button').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation()
-                const menu = btn.nextElementSibling
-                document.querySelectorAll('.menu-dropdown').forEach(m => m.style.display = 'none')
-                menu.style.display = menu.style.display === 'block' ? 'none' : 'block'
-            })
-        })
+        // Toggle del menú de opciones
+        function toggleMenu(event, button) {
+            event.stopPropagation();
+            const menu = button.nextElementSibling;
+            const allMenus = document.querySelectorAll('.menu-dropdown');
+            
+            // Cerrar todos los menús
+            allMenus.forEach(m => {
+                if (m !== menu) {
+                    m.classList.remove('show');
+                }
+            });
+            
+            // Toggle del menú actual
+            menu.classList.toggle('show');
+        }
 
+        // Cerrar menú al hacer clic fuera
         window.addEventListener('click', () => {
-            document.querySelectorAll('.menu-dropdown').forEach(m => m.style.display = 'none')
-        })
+            document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('show'));
+        });
+
+        // ========== FUNCIÓN EDITAR DIBUJO ==========
+        async function editDrawing(event, drawingId, editUrl) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Cerrar menú
+            document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('show'));
+            
+            // Paso 1: Modal de advertencia para editar
+            const result = await Swal.fire({
+                icon: 'question',
+                title: '¿Editar este dibujo?',
+                text: 'Serás redirigido al editor',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, editar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#6b7280',
+                reverseButtons: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: true
+            });
+            
+            // Si presionó Cancelar
+            if (result.isDismissed) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Operación cancelada',
+                    text: 'El dibujo no será editado',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6b7280',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                return;
+            }
+            
+            // Si presionó OK (confirmar)
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Redirigiendo!',
+                    text: 'Abriendo el editor...',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#10b981',
+                    timer: 1500,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+                
+                // Redireccionar después de 1.5 segundos
+                setTimeout(() => {
+                    window.location.href = editUrl;
+                }, 1500);
+            }
+        }
+
+        // ========== FUNCIÓN ELIMINAR DIBUJO ==========
+        async function deleteDrawing(event, drawingId, deleteUrl) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Cerrar menú
+            document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('show'));
+            
+            // Paso 1: Modal de advertencia para eliminar
+            const result = await Swal.fire({
+                icon: 'warning',
+                title: '¿Eliminar este dibujo?',
+                text: 'Esta acción no se puede deshacer',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                reverseButtons: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: true
+            });
+            
+            // Si presionó Cancelar
+            if (result.isDismissed) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Operación cancelada',
+                    text: 'El dibujo está a salvo',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6b7280',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                return;
+            }
+            
+            // Si presionó OK (confirmar eliminación)
+            if (result.isConfirmed) {
+                // Mostrar mensaje de éxito antes de eliminar
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: 'El dibujo ha sido eliminado',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#10b981',
+                    timer: 1500,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+                
+                // Redireccionar a la URL de eliminación (tu lógica actual)
+                window.location.href = deleteUrl;
+            }
+        }
     </script>
 </body>
 </html>
