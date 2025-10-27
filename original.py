@@ -150,11 +150,8 @@ def generate_frames(drawing_id=None):
     Restricciones: un panel abierto bloquea abrir el otro y bloquea toolbar.
     """
     global prev_point, canvas, mode, color, last_frame, last_canvas, pointer_data, current_points
-    global recent_index_positions  # para suavizado
 
     canvas = None
-    recent_index_positions = []
-    SMOOTHING = 3  # cantidad de frames a promediar para suavizado
 
     # 🔹 Cargar o crear nuevo dibujo
     if drawing_id is not None:
@@ -170,8 +167,8 @@ def generate_frames(drawing_id=None):
 
     with mp_hands.Hands(
         max_num_hands=1,
-        min_detection_confidence=0.8,  # más sensible
-        min_tracking_confidence=0.75   # tracking más estable
+        min_detection_confidence=0.7,
+        min_tracking_confidence=0.6
     ) as hands:
 
         while True:
@@ -210,13 +207,6 @@ def generate_frames(drawing_id=None):
                         cx, cy = int(index_finger.x * w), int(index_finger.y * h)
                         pointer_visible = True
 
-                        # 🔹 Suavizado del índice
-                        recent_index_positions.append([cx, cy])
-                        if len(recent_index_positions) > SMOOTHING:
-                            recent_index_positions.pop(0)
-                        avg_point = np.mean(recent_index_positions, axis=0).astype(int)
-                        cx, cy = int(avg_point[0]), int(avg_point[1])
-
                         # 🔸 Cerrar paneles con gesto índice+medio
                         if tool_action.panel_visible and fingers[1] and fingers[2] and not any(fingers[0:1] + fingers[3:]):
                             tool_action.close_brush_panel()
@@ -247,14 +237,17 @@ def generate_frames(drawing_id=None):
                                 if mode == "enhance":
                                     enhanced = enhance_action.enhance_stroke(current_points)
                                     stroke = save_action.add_stroke(enhanced, color, tool_action.get_brush_size())
-                                    # 🔹 Actualizar lienzo
+                                    
+                                    # 🔹 ACTUALIZAR INMEDIATAMENTE EL LIENZO
                                     canvas = draw_grid_background(h, w)
                                     strokes_img = save_action.render_strokes(save_action.current_strokes, w, h)
                                     if strokes_img is not None:
                                         mask = strokes_img < 250
                                         canvas[mask] = strokes_img[mask]
+
                                 else:
                                     stroke = save_action.add_stroke(current_points, color, tool_action.get_brush_size())
+                                    # también puedes actualizar para el modo draw si quieres reflejarlo inmediatamente
                                     canvas = draw_grid_background(h, w)
                                     strokes_img = save_action.render_strokes(save_action.current_strokes, w, h)
                                     if strokes_img is not None:
@@ -264,9 +257,11 @@ def generate_frames(drawing_id=None):
                             current_points = []
                             prev_point = None
 
+
                             # 🔹 Toolbar
                             toolbar_height = int(h * 0.18)
                             if mode == "select" and cy and cy < toolbar_height:
+                                # 🔹 Solo permitir toolbar si ningún panel está abierto
                                 if not (tool_action.panel_visible or color_action.panel_visible):
                                     section_width = w // len(BUTTONS)
                                     button_index = cx // section_width
@@ -292,16 +287,20 @@ def generate_frames(drawing_id=None):
                                                     canvas[mask] = strokes_img[mask]
 
                                         elif action_name == "color":
+                                            # 🔹 Abrir solo si pincel no está abierto
                                             if not tool_action.panel_visible:
                                                 color_action.open_color_panel()
 
                                         elif action_name == "brush":
+                                            # 🔹 Abrir solo si color no está abierto
                                             if not color_action.panel_visible:
                                                 tool_action.open_brush_panel()
 
                                         elif action_name == "save":
+                                            #save_action.save_current_drawing()
+                                            #undo_redo_action.reset_history()
                                             pointer_data["action"] = "save_requested"
-                                            print("[💾] Solicitud de guardado detectada")
+                                            print("[💾] Solicitud de guardado detectada")
 
                                         elif action_name == "enhance":
                                             mode = "enhance"
@@ -311,7 +310,7 @@ def generate_frames(drawing_id=None):
                 print(f"[ERROR en frame]: {e}")
                 continue
 
-            # 🔹 Obtener color actual
+            # 🔹 Obtener color actual (solo de la segunda versión)
             color = color_action.get_current_color()
 
             # 🔹 Dibujar UI
@@ -338,7 +337,6 @@ def generate_frames(drawing_id=None):
             ret, buffer = cv2.imencode('.jpg', output)
             yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' +
                    buffer.tobytes() + b'\r\n')
-
 
 
 # ---------------------- Cámara lateral ----------------------
