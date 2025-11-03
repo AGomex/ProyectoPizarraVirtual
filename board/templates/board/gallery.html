@@ -143,16 +143,22 @@
         .drawing-card {
             background: white;
             border-radius: 20px;
-            overflow: visible; /* CAMBIO IMPORTANTE */
+            overflow: visible;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
             transition: all 0.3s ease;
             cursor: pointer;
             position: relative;
+            z-index: 1;
         }
 
         .drawing-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            z-index: 2;
+        }
+        
+        .drawing-card.menu-open {
+            z-index: 100;
         }
 
         .drawing-image {
@@ -163,8 +169,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 20px 20px 0 0; /* AÑADIDO */
-            overflow: hidden; /* AÑADIDO */
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+            position: relative;
         }
 
         .drawing-image img {
@@ -173,12 +180,54 @@
             object-fit: contain;
         }
 
+        /* BOTÓN DE DESCARGA EN LA IMAGEN */
+        .download-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .download-button:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .download-button:active {
+            transform: scale(0.95);
+        }
+
+        .download-button svg {
+            width: 22px;
+            height: 22px;
+            color: #3b82f6;
+            transition: all 0.3s ease;
+        }
+
+        .download-button:hover svg {
+            color: #2563eb;
+        }
+
         .drawing-info {
             padding: 20px;
             background: white;
-            border-radius: 0 0 20px 20px; /* AÑADIDO */
-            overflow: visible; /* AÑADIDO */
-            position: relative; /* AÑADIDO */
+            border-radius: 0 0 20px 20px;
+            overflow: visible;
+            position: relative;
+            z-index: 1;
         }
 
         /* Nueva estructura para título y botones */
@@ -208,7 +257,7 @@
         /* Menú de opciones mejorado */
         .options-menu {
             position: relative;
-            z-index: 10;
+            z-index: 110;
         }
 
         .menu-button {
@@ -242,12 +291,12 @@
             top: 40px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            overflow: visible; /* CAMBIADO */
-            z-index: 1000; /* AUMENTADO */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            overflow: visible;
+            z-index: 9999;
             min-width: 160px;
             border: 1px solid #e2e8f0;
-            padding: 6px 0; /* AÑADIDO */
+            padding: 6px 0;
         }
 
         .menu-dropdown.show {
@@ -276,9 +325,9 @@
             font-size: 0.9rem;
             transition: all 0.2s ease;
             cursor: pointer;
-            white-space: nowrap; /* AÑADIDO */
-            border-radius: 8px; /* AÑADIDO */
-            margin: 4px 8px; /* AÑADIDO para dar espacio */
+            white-space: nowrap;
+            border-radius: 8px;
+            margin: 4px 8px;
         }
 
         .menu-dropdown a:hover {
@@ -304,7 +353,7 @@
         .menu-dropdown a svg {
             width: 18px;
             height: 18px;
-            flex-shrink: 0; /* AÑADIDO */
+            flex-shrink: 0;
         }
 
         /* Estado vacío mejorado */
@@ -376,6 +425,16 @@
                 height: 250px;
             }
 
+            .download-button {
+                width: 40px;
+                height: 40px;
+            }
+
+            .download-button svg {
+                width: 20px;
+                height: 20px;
+            }
+
             .empty-state-icon {
                 width: 150px;
                 height: 150px;
@@ -434,6 +493,13 @@
                         {% else %}
                             <img src="{% static 'board/img/placeholder.png' %}" alt="Sin miniatura">
                         {% endif %}
+                        
+                        <!-- BOTÓN DE DESCARGA -->
+                        <button class="download-button" onclick="downloadImage(event, '{{ drawing.thumbnail.url }}', '{{ drawing.name }}')" title="Descargar imagen">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                        </button>
                     </div>
                     <div class="drawing-info">
                         <!-- Título y menú de opciones -->
@@ -498,23 +564,114 @@
         function toggleMenu(event, button) {
             event.stopPropagation();
             const menu = button.nextElementSibling;
+            const card = button.closest('.drawing-card');
             const allMenus = document.querySelectorAll('.menu-dropdown');
+            const allCards = document.querySelectorAll('.drawing-card');
             
-            // Cerrar todos los menús
+            // Cerrar todos los menús y remover clase menu-open
             allMenus.forEach(m => {
                 if (m !== menu) {
                     m.classList.remove('show');
                 }
             });
+            allCards.forEach(c => c.classList.remove('menu-open'));
             
             // Toggle del menú actual
             menu.classList.toggle('show');
+            
+            // Agregar clase menu-open a la tarjeta si el menú está abierto
+            if (menu.classList.contains('show')) {
+                card.classList.add('menu-open');
+            }
         }
 
         // Cerrar menú al hacer clic fuera
         window.addEventListener('click', () => {
             document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('show'));
+            document.querySelectorAll('.drawing-card').forEach(c => c.classList.remove('menu-open'));
         });
+
+        // ========== FUNCIÓN DESCARGAR IMAGEN ==========
+        async function downloadImage(event, imageUrl, imageName) {
+            event.stopPropagation(); // Evitar que se abra el canvas al hacer clic
+            
+            // Paso 1: Confirmar si desea descargar
+            const result = await Swal.fire({
+                icon: 'question',
+                title: '¿Descargar esta imagen?',
+                text: `Se descargará "${imageName}"`,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, descargar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#6b7280',
+                reverseButtons: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: true
+            });
+            
+            // Si presionó Cancelar
+            if (result.isDismissed) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Operación cancelada',
+                    text: 'La imagen no será descargada',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                return;
+            }
+            
+            // Si presionó OK (confirmar descarga)
+            if (result.isConfirmed) {
+                try {
+                    // Mostrar mensaje de descarga
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Descargando...',
+                        text: 'Preparando tu imagen',
+                        showConfirmButton: false,
+                        timer: 1000,
+                        timerProgressBar: true
+                    });
+
+                    // Descargar la imagen
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `${imageName}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    // Mostrar mensaje de éxito
+                    setTimeout(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Descargado!',
+                            text: 'La imagen se ha descargado correctamente',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                    }, 1000);
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo descargar la imagen',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            }
+        }
 
         // ========== FUNCIÓN EDITAR DIBUJO ==========
         async function editDrawing(event, drawingId, editUrl) {
@@ -546,8 +703,7 @@
                     icon: 'info',
                     title: 'Operación cancelada',
                     text: 'El dibujo no será editado',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#6b7280',
+                    showConfirmButton: false,
                     timer: 2000,
                     timerProgressBar: true
                 });
@@ -604,8 +760,7 @@
                     icon: 'info',
                     title: 'Operación cancelada',
                     text: 'El dibujo está a salvo',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#6b7280',
+                    showConfirmButton: false,
                     timer: 2000,
                     timerProgressBar: true
                 });

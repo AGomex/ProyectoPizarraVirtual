@@ -1,13 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Pizarra Virtual</title>
     <link href="{% static 'board/css/style.css' %}" rel="stylesheet">
-     <!-- SweetAlert2 -->
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <style>
         body {
             margin: 0;
@@ -42,14 +43,14 @@
         /* Contenedor de botones horizontales */
         .button-group {
             display: flex;
-            gap: 15px;
+            gap: 30px;
             margin-bottom: 20px;
             align-items: center;
         }
 
         /* Estilo común para botones */
         .home-logo,
-        .new-canvas-btn {
+        .gallery-btn {
             width: 60px;
             height: 60px;
             cursor: pointer;
@@ -65,16 +66,32 @@
         }
 
         .home-logo:hover,
-        .new-canvas-btn:hover {
+        .gallery-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
 
         .home-logo img,
-        .new-canvas-btn img {
+        .gallery-btn img {
             width: 100%;
             height: 100%;
             object-fit: contain;
+        }
+
+        .button-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .button-label {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 3px;
         }
 
         #camera {
@@ -255,9 +272,12 @@
         }
 
         @keyframes float {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateY(0px);
             }
+
             50% {
                 transform: translateY(-10px);
             }
@@ -312,7 +332,9 @@
             z-index: 20;
         }
 
-        img, video, canvas {
+        img,
+        video,
+        canvas {
             display: block;
         }
 
@@ -336,154 +358,152 @@
         }
     </style>
 </head>
-<body>
-<div class="container">
-    <!-- Cámara lateral -->
-    <div class="left-panel">
-        <!-- Grupo de botones horizontales -->
-        <div class="button-group">
-            <!-- Logo HOME -->
-            <a href="/" class="home-logo" title="Volver al inicio">
-                <img src="{% static 'board/icons/home.png' %}" alt="Home">
-            </a>
-            <!-- Botón Nuevo Lienzo -->
-            <a href='#' class="new-canvas-btn" title="Agregar nuevo lienzo" onclick="newCanvas(event)">
-                <img src="{% static 'board/icons/new.png' %}" alt="Nuevo Lienzo">
-            </a>
-        </div>
-        
-        <img id="camera" src="{% url 'camera_feed' %}" alt="Cámara">
 
-        <!-- Sección de dibujos recientes -->
-        <div class="recent-drawings-section">
-            <h3 class="recent-title">Dibujos Recientes</h3>
-            
-            {% if recent_drawings %}
+<body>
+    <div class="container">
+        <!-- Cámara lateral -->
+        <div class="left-panel">
+            <!-- Grupo de botones horizontales -->
+            <div class="button-group">
+                <!-- Logo HOME -->
+                <div class="button-wrapper">
+                    <a href="/" class="home-logo" title="Volver al inicio">
+                        <img src="{% static 'board/icons/home.png' %}" alt="Home">
+                    </a>
+                    <span class="button-label">Inicio</span>
+                </div>
+
+                <!-- Botón GALERÍA (corregido) -->
+                <div class="button-wrapper">
+                    <a href='/gallery' class="gallery-btn" title="Ir a Galeria">
+                        <img src="{% static 'board/icons/gallery.png' %}" alt="Galería">
+                    </a>
+                    <span class="button-label">Galería</span>
+                </div>
+            </div>
+
+            <img id="camera" src="{% url 'camera_feed' %}" alt="Cámara">
+
+            <!-- Sección de dibujos recientes -->
+            <div class="recent-drawings-section">
+                <h3 class="recent-title">Dibujos Recientes</h3>
+
+                {% if recent_drawings %}
                 <div class="carousel-container">
                     <!-- Flechas de navegación -->
                     <button class="carousel-arrow left" id="prevBtn" onclick="moveCarousel(-1)">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    
+
                     <div class="recent-drawings-grid">
                         <div class="carousel-track" id="carouselTrack">
                             {% for drawing in recent_drawings %}
-                                <div class="recent-drawing-card" onclick="window.location.href='{% url 'canvas' drawing.id %}'">
-                                    <div class="recent-drawing-image">
-                                        {% if drawing.thumbnail %}
-                                            <img src="{{ drawing.thumbnail.url }}?v={{ drawing.updated_at.timestamp }}" alt="{{ drawing.name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                        {% else %}
-                                            <img src="{% static 'board/img/placeholder.png' %}" alt="Sin miniatura" style="width: 100%; height: 100%; object-fit: cover;">
-                                        {% endif %}
-                                    </div>
-                                    <div class="recent-drawing-info">
-                                        <div class="recent-drawing-name">{{ drawing.name }}</div>
-                                        <div class="recent-drawing-date">{{ drawing.updated_at|date:"d/m/Y H:i" }}</div>
-                                    </div>
+                            <div class="recent-drawing-card"
+                                onclick="window.location.href='{% url 'canvas' drawing.id %}'">
+                                <div class="recent-drawing-image">
+                                    {% if drawing.thumbnail %}
+                                    <img src="{{ drawing.thumbnail.url }}?v={{ drawing.updated_at.timestamp }}"
+                                        alt="{{ drawing.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                    <img src="{% static 'board/img/placeholder.png' %}" alt="Sin miniatura"
+                                        style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% endif %}
                                 </div>
+                                <div class="recent-drawing-info">
+                                    <div class="recent-drawing-name">{{ drawing.name }}</div>
+                                    <div class="recent-drawing-date">{{ drawing.updated_at|date:"d/m/Y H:i" }}</div>
+                                </div>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
 
                     <button class="carousel-arrow right" id="nextBtn" onclick="moveCarousel(1)">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
 
                     <!-- Indicadores de puntos -->
                     <div class="carousel-dots" id="carouselDots"></div>
                 </div>
-            {% else %}
+                {% else %}
                 <div class="empty-recent-state">
                     <img src="{% static 'board/icons/paleta-color.png' %}" alt="Sin dibujos" class="empty-recent-icon">
                     <div class="empty-recent-text">No hay dibujos aún</div>
                     <div class="empty-recent-subtext">Comienza a crear tu primera obra maestra</div>
                 </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pizarra -->
+        <div class="main-panel">
+            {% if drawing %}
+            <img id="video" src="{% url 'video_feed' drawing.id %}" alt="Pizarra">
+            {% else %}
+            <img id="video" src="{% url 'video_feed_blank' %}" alt="Pizarra">
             {% endif %}
         </div>
     </div>
 
-    <!-- Pizarra -->
-    <div class="main-panel">
-        {% if drawing %}
-            <img id="video" src="{% url 'video_feed' drawing.id %}" alt="Pizarra">
-        {% else %}
-            <img id="video" src="{% url 'video_feed_blank' %}" alt="Pizarra">
-        {% endif %}
-    </div>
-</div>
+    <script>
+        // ========== CARRUSEL DE DIBUJOS ==========
+        let currentSlide = 0;
+        const track = document.getElementById('carouselTrack');
+        const cards = document.querySelectorAll('.recent-drawing-card');
+        const totalSlides = cards.length;
+        const dotsContainer = document.getElementById('carouselDots');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
 
-<script>
-// ========== CARRUSEL DE DIBUJOS ==========
-let currentSlide = 0;
-const track = document.getElementById('carouselTrack');
-const cards = document.querySelectorAll('.recent-drawing-card');
-const totalSlides = cards.length;
-const dotsContainer = document.getElementById('carouselDots');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
+        // Crear puntos indicadores
+        if (totalSlides > 0) {
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'carousel-dot';
+                if (i === 0) dot.classList.add('active');
+                dot.onclick = () => goToSlide(i);
+                dotsContainer.appendChild(dot);
+            }
+        }
 
-// Crear puntos indicadores
-if (totalSlides > 0) {
-    for (let i = 0; i < totalSlides; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'carousel-dot';
-        if (i === 0) dot.classList.add('active');
-        dot.onclick = () => goToSlide(i);
-        dotsContainer.appendChild(dot);
-    }
-}
+        function updateCarousel() {
+            if (!track) return;
 
-function updateCarousel() {
-    if (!track) return;
-    
-    // Mover el carrusel
-    track.style.transform = `translateX(-${currentSlide * 100}%)`;
-    
-    // Actualizar puntos
-    document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
-        dot.classList.toggle('active', index === currentSlide);
-    });
-    
-    // Actualizar estado de las flechas
-    if (prevBtn) prevBtn.classList.toggle('disabled', currentSlide === 0);
-    if (nextBtn) nextBtn.classList.toggle('disabled', currentSlide === totalSlides - 1);
-}
+            // Mover el carrusel
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
 
-function moveCarousel(direction) {
-    currentSlide += direction;
-    
-    // Limitar el rango
-    if (currentSlide < 0) currentSlide = 0;
-    if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
-    
-    updateCarousel();
-}
+            // Actualizar puntos
+            document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
 
-function goToSlide(index) {
-    currentSlide = index;
-    updateCarousel();
-}
+            // Actualizar estado de las flechas
+            if (prevBtn) prevBtn.classList.toggle('disabled', currentSlide === 0);
+            if (nextBtn) nextBtn.classList.toggle('disabled', currentSlide === totalSlides - 1);
+        }
 
-// Auto-avance cada 5 segundos (opcional)
-let autoSlide = setInterval(() => {
-    if (currentSlide < totalSlides - 1) {
-        moveCarousel(1);
-    } else {
-        currentSlide = 0;
-        updateCarousel();
-    }
-}, 5000);
+        function moveCarousel(direction) {
+            currentSlide += direction;
 
-// Pausar auto-avance al hacer hover
-const carouselContainer = document.querySelector('.carousel-container');
-if (carouselContainer) {
-    carouselContainer.addEventListener('mouseenter', () => clearInterval(autoSlide));
-    carouselContainer.addEventListener('mouseleave', () => {
-        autoSlide = setInterval(() => {
+            // Limitar el rango
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+
+            updateCarousel();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+
+        // Auto-avance cada 5 segundos (opcional)
+        let autoSlide = setInterval(() => {
             if (currentSlide < totalSlides - 1) {
                 moveCarousel(1);
             } else {
@@ -491,338 +511,353 @@ if (carouselContainer) {
                 updateCarousel();
             }
         }, 5000);
-    });
-}
 
-// Inicializar
-updateCarousel();
-
-// ========== SISTEMA DE POLLING DINÁMICO ==========
-let pointerInterval;
-let fastPolling = false;
-let lastSaveRequest = false;
-
-async function updatePointer() {
-    try {
-        const res = await fetch("{% url 'pointer_data' %}");
-        const data = await res.json();
-
-        // 🔹 Detectar si el cursor está sobre el botón "save"
-        // Esto acelera el polling para capturar el click más rápido
-        if (data.action === "save" && !fastPolling) {
-            fastPolling = true;
-            clearInterval(pointerInterval);
-            pointerInterval = setInterval(updatePointer, 100); // ⚡ Polling ultra rápido
-            console.log("⚡ Polling acelerado activado (100ms)");
-        } else if (data.action !== "save" && data.action !== "save_requested" && fastPolling) {
-            fastPolling = false;
-            clearInterval(pointerInterval);
-            pointerInterval = setInterval(updatePointer, 1000); // 🐌 Volver a normal
-            console.log("🐌 Polling normal restaurado (1000ms)");
+        // Pausar auto-avance al hacer hover
+        const carouselContainer = document.querySelector('.carousel-container');
+        if (carouselContainer) {
+            carouselContainer.addEventListener('mouseenter', () => clearInterval(autoSlide));
+            carouselContainer.addEventListener('mouseleave', () => {
+                autoSlide = setInterval(() => {
+                    if (currentSlide < totalSlides - 1) {
+                        moveCarousel(1);
+                    } else {
+                        currentSlide = 0;
+                        updateCarousel();
+                    }
+                }, 5000);
+            });
         }
 
-        // 🔹 DETECTAR SOLICITUD DE GUARDADO (solo una vez)
-        if (data.action === "save_requested" && !lastSaveRequest) {
-            lastSaveRequest = true;
-            
-            let savedSuccessfully = false;
-            
-            // Bucle para repetir el input si hay error de nombre duplicado
-            while (!savedSuccessfully) {
-                // Mostrar SweetAlert para ingresar nombre
-                const { value: drawingName } = await Swal.fire({
-                    title: '💾 Guardar Dibujo',
-                    input: 'text',
-                    inputLabel: 'Nombre del dibujo',
-                    inputPlaceholder: 'Ej: Mi obra maestra',
-                    inputValue: '{% if drawing %}{{ drawing.name }}{% else %}{% endif %}',
-                    showCancelButton: true,
-                    confirmButtonText: 'Guardar',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#3b82f6',
-                    cancelButtonColor: '#6b7280',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    inputValidator: (value) => {
-                        if (!value) {
-                            return 'Por favor ingresa un nombre';
+        // Inicializar
+        updateCarousel();
+
+        // ========== SISTEMA DE POLLING DINÁMICO ==========
+        let pointerInterval;
+        let fastPolling = false;
+        let lastSaveRequest = false;
+
+        async function updatePointer() {
+            try {
+                const res = await fetch("{% url 'pointer_data' %}");
+                const data = await res.json();
+
+                // 🔹 Detectar si el cursor está sobre el botón "save"
+                // Esto acelera el polling para capturar el click más rápido
+                if (data.action === "save" && !fastPolling) {
+                    fastPolling = true;
+                    clearInterval(pointerInterval);
+                    pointerInterval = setInterval(updatePointer, 100); // ⚡ Polling ultra rápido
+                    console.log("⚡ Polling acelerado activado (100ms)");
+                } else if (data.action !== "save" && data.action !== "save_requested" && fastPolling) {
+                    fastPolling = false;
+                    clearInterval(pointerInterval);
+                    pointerInterval = setInterval(updatePointer, 1000); // 🐌 Volver a normal
+                    console.log("🐌 Polling normal restaurado (1000ms)");
+                }
+
+                // 🔹 DETECTAR SOLICITUD DE GUARDADO (solo una vez)
+                if (data.action === "save_requested" && !lastSaveRequest) {
+                    lastSaveRequest = true;
+
+                    let savedSuccessfully = false;
+
+                    // Bucle para repetir el input si hay error de nombre duplicado
+                    while (!savedSuccessfully) {
+                        // Mostrar SweetAlert para ingresar nombre
+                        const { value: drawingName } = await Swal.fire({
+                            title: '💾 Guardar Dibujo',
+                            input: 'text',
+                            inputLabel: 'Nombre del dibujo',
+                            inputPlaceholder: 'Ej: Mi obra maestra',
+                            inputValue: '{% if drawing %}{{ drawing.name }}{% else %}{% endif %}',
+                            showCancelButton: true,
+                            confirmButtonText: 'Guardar',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#3b82f6',
+                            cancelButtonColor: '#6b7280',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return 'Por favor ingresa un nombre';
+                                }
+                            }
+                        });
+
+                        // Si canceló, salir del bucle
+                        if (!drawingName) {
+                            console.log('[INFO] Guardado cancelado');
+                            lastSaveRequest = false;
+                            break;
+                        }
+
+                        // Mostrar loading
+                        Swal.fire({
+                            title: 'Guardando...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+
+                        // Enviar al servidor
+                        const response = await fetch('/save-with-name/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: drawingName })
+                        });
+
+                        const result = await response.json();
+
+                        // Mostrar resultado
+                        if (result.success) {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: '¡Guardado!',
+                                text: result.message,
+                                confirmButtonColor: '#10b981',
+                                timer: 2000,
+                                timerProgressBar: true,
+                                showConfirmButton: false
+                            });
+                            savedSuccessfully = true;
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else {
+                            // Si hay error (nombre duplicado u otro), mostrar el error
+                            // y el bucle volverá a mostrar el input
+                            await Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message,
+                                confirmButtonColor: '#ef4444',
+                                timer: 2000,
+                                timerProgressBar: true
+                            });
+                            // NO salir del bucle, volverá a pedir el nombre
                         }
                     }
-                });
 
-                // Si canceló, salir del bucle
-                if (!drawingName) {
-                    console.log('[INFO] Guardado cancelado');
                     lastSaveRequest = false;
-                    break;
+                } else if (data.action !== "save_requested") {
+                    lastSaveRequest = false;
                 }
 
-                // Mostrar loading
-                Swal.fire({
-                    title: 'Guardando...',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                // Enviar al servidor
-                const response = await fetch('/save-with-name/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: drawingName })
-                });
-
-                const result = await response.json();
-
-                // Mostrar resultado
-                if (result.success) {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: '¡Guardado!',
-                        text: result.message,
-                        confirmButtonColor: '#10b981',
-                        timer: 2000,
-                        timerProgressBar: true,
-                        showConfirmButton: false
-                    });
-                    savedSuccessfully = true;
-                    setTimeout(() => window.location.reload(), 2000);
-                } else {
-                    // Si hay error (nombre duplicado u otro), mostrar el error
-                    // y el bucle volverá a mostrar el input
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message,
-                        confirmButtonColor: '#ef4444',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
-                    // NO salir del bucle, volverá a pedir el nombre
+                // Si hay redirección activada
+                if (data.redirect && data.url) {
+                    await fetch("{% url 'reset_redirect' %}", { method: "POST" });
+                    window.location.href = data.url;
                 }
+            } catch (err) {
+                console.error("Error puntero:", err);
             }
-            
-            lastSaveRequest = false;
-        } else if (data.action !== "save_requested") {
-            lastSaveRequest = false;
+        }
+        // Iniciar polling normal (1 segundo)
+        pointerInterval = setInterval(updatePointer, 1000);
+
+        // 🔁 Fuerza recarga del video al volver o cambiar dibujo
+        window.addEventListener("pageshow", () => {
+            const video = document.getElementById("video");
+            if (video) {
+                video.src = video.src.split("?")[0] + "?t=" + Date.now();
+            }
+        });
+
+        // Interceptar cierre de pestaña/navegador y flechas del navegador
+        window.addEventListener("beforeunload", (event) => {
+            if (allowNavigation) {
+                return; // Permitir salir sin preguntar si ya guardó o descartó
+            }
+
+            if (hasUnsavedChanges) {
+                event.preventDefault();
+                event.returnValue = "Tienes cambios sin guardar. ¿Seguro que deseas salir?";
+                return event.returnValue;
+            }
+        });
+
+        // ========== SISTEMA DE GUARDAR AL SALIR ==========
+
+        // Variable global para controlar si hay cambios
+        let hasUnsavedChanges = false;
+        let allowNavigation = false;
+
+        // Función para verificar cambios sin guardar
+        async function checkUnsavedChanges() {
+            try {
+                const res = await fetch("/check-unsaved/");
+                const data = await res.json();
+                hasUnsavedChanges = data.unsaved;
+                return data.unsaved;
+            } catch (err) {
+                console.error("Error verificando cambios:", err);
+                return false;
+            }
         }
 
-        // Si hay redirección activada
-        if (data.redirect && data.url) {
-            await fetch("{% url 'reset_redirect' %}", { method: "POST" });
-            window.location.href = data.url;
-        }
-    } catch (err) {
-        console.error("Error puntero:", err);
-    }
-}
-// Iniciar polling normal (1 segundo)
-pointerInterval = setInterval(updatePointer, 1000);
+        // Función para manejar la salida con confirmación
+        async function handleExit(targetUrl) {
+            // Verificar si hay cambios sin guardar
+            const unsaved = await checkUnsavedChanges();
 
-// 🔁 Fuerza recarga del video al volver o cambiar dibujo
-window.addEventListener("pageshow", () => {
-  const video = document.getElementById("video");
-  if (video) {
-      video.src = video.src.split("?")[0] + "?t=" + Date.now();
-  }
-});
+            if (!unsaved) {
+                // No hay cambios, navegar directamente
+                window.location.href = targetUrl;
+                return;
+            }
 
-// Interceptar cierre de pestaña/navegador y flechas del navegador
-window.addEventListener("beforeunload", (event) => {
-    if (allowNavigation) {
-        return; // Permitir salir sin preguntar si ya guardó o descartó
-    }
-    
-    if (hasUnsavedChanges) {
-        event.preventDefault();
-        event.returnValue = "Tienes cambios sin guardar. ¿Seguro que deseas salir?";
-        return event.returnValue;
-    }
-});
-
-// ========== SISTEMA DE GUARDAR AL SALIR ==========
-
-// Variable global para controlar si hay cambios
-let hasUnsavedChanges = false;
-let allowNavigation = false;
-
-// Función para verificar cambios sin guardar
-async function checkUnsavedChanges() {
-    try {
-        const res = await fetch("/check-unsaved/");
-        const data = await res.json();
-        hasUnsavedChanges = data.unsaved;
-        return data.unsaved;
-    } catch (err) {
-        console.error("Error verificando cambios:", err);
-        return false;
-    }
-}
-
-// Función para manejar la salida con confirmación
-async function handleExit(targetUrl) {
-    // Verificar si hay cambios sin guardar
-    const unsaved = await checkUnsavedChanges();
-    
-    if (!unsaved) {
-        // No hay cambios, navegar directamente
-        window.location.href = targetUrl;
-        return;
-    }
-    
-    // Mostrar alerta de confirmación
-    const result = await Swal.fire({
-        icon: 'warning',
-        title: '⚠ Cambios sin guardar',
-        text: 'Tienes un dibujo sin guardar. ¿Qué deseas hacer?',
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar',
-        denyButtonText: 'Descartar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#10b981',
-        denyButtonColor: '#ef4444',
-        cancelButtonColor: '#6b7280',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        reverseButtons: true
-    });
-    
-    // 🟢 GUARDAR
-    if (result.isConfirmed) {
-        let savedSuccessfully = false;
-        
-        while (!savedSuccessfully) {
-            // Pedir nombre del dibujo
-            const { value: drawingName } = await Swal.fire({
-                title: '💾 Guardar Dibujo',
-                input: 'text',
-                inputLabel: 'Nombre del dibujo',
-                inputPlaceholder: 'Ej: Mi obra maestra',
-                inputValue: '{% if drawing %}{{ drawing.name }}{% else %}{% endif %}',
+            // Mostrar alerta de confirmación
+            const result = await Swal.fire({
+                icon: 'warning',
+                title: '⚠ Cambios sin guardar',
+                text: 'Tienes un dibujo sin guardar. ¿Qué deseas hacer?',
+                showDenyButton: true,
                 showCancelButton: true,
                 confirmButtonText: 'Guardar',
+                denyButtonText: 'Descartar',
                 cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#3b82f6',
+                confirmButtonColor: '#10b981',
+                denyButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'Por favor ingresa un nombre';
+                reverseButtons: true
+            });
+
+            // 🟢 GUARDAR
+            if (result.isConfirmed) {
+                let savedSuccessfully = false;
+
+                while (!savedSuccessfully) {
+                    // Pedir nombre del dibujo
+                    const { value: drawingName } = await Swal.fire({
+                        title: '💾 Guardar Dibujo',
+                        input: 'text',
+                        inputLabel: 'Nombre del dibujo',
+                        inputPlaceholder: 'Ej: Mi obra maestra',
+                        inputValue: '{% if drawing %}{{ drawing.name }}{% else %}{% endif %}',
+                        showCancelButton: true,
+                        confirmButtonText: 'Guardar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        inputValidator: (value) => {
+                            if (!value) {
+                                return 'Por favor ingresa un nombre';
+                            }
+                        }
+                    });
+
+                    // Si canceló
+                    if (!drawingName) {
+                        console.log('[INFO] Guardado cancelado');
+                        return; // Volver a la pizarra
+                    }
+
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Guardando...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    // Enviar al servidor
+                    const response = await fetch('/save-with-name/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: drawingName })
+                    });
+
+                    const saveResult = await response.json();
+
+                    if (saveResult.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: '¡Guardado!',
+                            text: saveResult.message,
+                            confirmButtonColor: '#10b981',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false
+                        });
+                        savedSuccessfully = true;
+                        allowNavigation = true;
+                        setTimeout(() => {
+                            window.location.href = targetUrl;
+                        }, 1500);
+                    } else {
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: saveResult.message,
+                            confirmButtonColor: '#ef4444',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
                     }
                 }
-            });
-            
-            // Si canceló
-            if (!drawingName) {
-                console.log('[INFO] Guardado cancelado');
-                return; // Volver a la pizarra
             }
-            
-            // Mostrar loading
-            Swal.fire({
-                title: 'Guardando...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-            
-            // Enviar al servidor
-            const response = await fetch('/save-with-name/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: drawingName })
-            });
-            
-            const saveResult = await response.json();
-            
-            if (saveResult.success) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: '¡Guardado!',
-                    text: saveResult.message,
-                    confirmButtonColor: '#10b981',
-                    timer: 1500,
-                    timerProgressBar: true,
-                    showConfirmButton: false
-                });
-                savedSuccessfully = true;
-                allowNavigation = true;
-                setTimeout(() => {
-                    window.location.href = targetUrl;
-                }, 1500);
-            } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: saveResult.message,
+            // 🔴 DESCARTAR
+            else if (result.isDenied) {
+                const confirmDiscard = await Swal.fire({
+                    icon: 'question',
+                    title: '¿Estás seguro?',
+                    text: 'Se perderá todo el dibujo actual',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, descartar',
+                    cancelButtonText: 'No, volver',
                     confirmButtonColor: '#ef4444',
-                    timer: 2000,
-                    timerProgressBar: true
+                    cancelButtonColor: '#6b7280',
+                    allowOutsideClick: false,
+                    reverseButtons: true
                 });
+
+                if (confirmDiscard.isConfirmed) {
+                    await Swal.fire({
+                        icon: 'info',
+                        title: 'Descartado',
+                        text: 'El dibujo no se guardó',
+                        confirmButtonColor: '#6b7280',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    });
+                    allowNavigation = true;
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 1500);
+                }
             }
+            // ⚫ CANCELAR - No hace nada, se queda en la pizarra
         }
-    }
-    // 🔴 DESCARTAR
-    else if (result.isDenied) {
-        const confirmDiscard = await Swal.fire({
-            icon: 'question',
-            title: '¿Estás seguro?',
-            text: 'Se perderá todo el dibujo actual',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, descartar',
-            cancelButtonText: 'No, volver',
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#6b7280',
-            allowOutsideClick: false,
-            reverseButtons: true
+
+        // Interceptar clic en botón HOME
+        document.querySelector('.home-logo').addEventListener('click', async function (e) {
+            e.preventDefault();
+            await handleExit('/');
         });
-        
-        if (confirmDiscard.isConfirmed) {
-            await Swal.fire({
-                icon: 'info',
-                title: 'Descartado',
-                text: 'El dibujo no se guardó',
-                confirmButtonColor: '#6b7280',
-                timer: 1500,
-                timerProgressBar: true,
-                showConfirmButton: false
-            });
-            allowNavigation = true;
-            setTimeout(() => {
-                window.location.href = targetUrl;
-            }, 1500);
-        }
-    }
-    // ⚫ CANCELAR - No hace nada, se queda en la pizarra
-}
 
-// Interceptar clic en botón HOME
-document.querySelector('.home-logo').addEventListener('click', async function(e) {
-    e.preventDefault();
-    await handleExit('/');
-});
+        // ⬅ INTERCEPTAR FLECHAS DEL NAVEGADOR Y CIERRE DE PESTAÑA
+        window.addEventListener("beforeunload", (event) => {
+            // Si ya autorizamos la navegación, dejar salir sin preguntar
+            if (allowNavigation) {
+                return;
+            }
 
-// ⬅ INTERCEPTAR FLECHAS DEL NAVEGADOR Y CIERRE DE PESTAÑA
-window.addEventListener("beforeunload", (event) => {
-    // Si ya autorizamos la navegación, dejar salir sin preguntar
-    if (allowNavigation) {
-        return;
-    }
-    
-    // Si hay cambios sin guardar, mostrar advertencia del navegador
-    if (hasUnsavedChanges) {
-        event.preventDefault();
-        event.returnValue = ""; // Chrome requiere esto
-        return "Tienes cambios sin guardar. ¿Seguro que deseas salir?"; // Mensaje para navegadores antiguos
-    }
-});
+            // Si hay cambios sin guardar, mostrar advertencia del navegador
+            if (hasUnsavedChanges) {
+                event.preventDefault();
+                event.returnValue = ""; // Chrome requiere esto
+                return "Tienes cambios sin guardar. ¿Seguro que deseas salir?"; // Mensaje para navegadores antiguos
+            }
+        });
 
-// Verificar cambios cada 1 segundo (más frecuente para detectar rápido)
-setInterval(checkUnsavedChanges, 1000);
+        // Verificar cambios cada 1 segundo (más frecuente para detectar rápido)
+        setInterval(checkUnsavedChanges, 1000);
 
-// Verificar inmediatamente al cargar
-checkUnsavedChanges();
-</script>
+        // Verificar inmediatamente al cargar
+        checkUnsavedChanges();
+    </script>
 
 </body>
+
 </html>
