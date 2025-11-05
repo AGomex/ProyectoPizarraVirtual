@@ -11,6 +11,9 @@ import numpy as np
 import os
 from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 
 @require_GET
 # def check_unsaved_changes(request):
@@ -83,6 +86,7 @@ def home(request):
 from django.shortcuts import render, get_object_or_404
 from .models import Drawing
 
+@login_required
 def canvas_view(request, drawing_id=None):
     drawing = None
 
@@ -99,7 +103,7 @@ def canvas_view(request, drawing_id=None):
         save_action.start_new_drawing(name="Nuevo Dibujo")
     
     # 🔹 Obtener los últimos dibujos para mostrar en el panel lateral
-    recent_drawings = Drawing.objects.order_by('-updated_at')
+    recent_drawings = Drawing.objects.filter(user=request.user).order_by('-updated_at')
 
     # 🔹 Renderizar plantilla en todos los casos
     return render(request, "board/canvas.html", {
@@ -107,11 +111,9 @@ def canvas_view(request, drawing_id=None):
         "recent_drawings": recent_drawings
     })
 
-
-
-
+@login_required
 def gallery_view(request):
-    drawings = Drawing.objects.order_by('-updated_at')[:16]
+    drawings = Drawing.objects.filter(user=request.user).order_by('-updated_at')[:16]
 
     for drawing in drawings:
         thumb_dir = os.path.join(settings.MEDIA_ROOT, "thumbs")
@@ -152,6 +154,7 @@ def delete_drawing(request, drawing_id):
     drawing.delete()
     return redirect("gallery")
 
+@login_required
 def manual(request):
     return render(request, 'board/manual.html')
 
@@ -218,7 +221,7 @@ def save_drawing_with_name(request):
         
         # 🔹 VERIFICAR SI YA EXISTE UN DIBUJO CON ESE NOMBRE (case-insensitive)
         # Obtenemos todos los dibujos y comparamos manualmente en Python
-        all_drawings = Drawing.objects.all()
+        all_drawings = Drawing.objects.filter(user=request.user)
 
         # Si estamos editando un dibujo existente, excluirlo
         if save_action.current_drawing and save_action.current_drawing.id:
@@ -234,7 +237,10 @@ def save_drawing_with_name(request):
         
         # Guardar
         drawing = save_action.save_current_drawing(name=drawing_name)
-        
+        if drawing:
+            drawing.user = request.user
+            drawing.save(update_fields=["user"])
+
         if drawing:
             return JsonResponse({
                 "success": True,
@@ -252,3 +258,52 @@ def save_drawing_with_name(request):
             "success": False,
             "message": f"Error: {str(e)}"
         }, status=500)
+    
+@csrf_exempt
+@require_POST
+def login_user(request):
+    username = request.POST.get("username")
+    password = request.POST.get("password")
+
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return JsonResponse({"success": True})
+    
+    return JsonResponse({
+        "success": False,
+        "message": "Credenciales incorrectas"
+    })
+
+
+def register_user(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        password2 = request.POST.get("password2")
+
+        if password != password2:
+            return JsonResponse({"success": False, "message": "Las contraseñas no coinciden"})
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({"success": False, "message": "El usuario ya existe"})
+
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({"success": False, "message": "El correo ya está en uso"})
+
+        if len(password) < 8:
+            return JsonResponse({"success": False, "message": "La contraseña debe tener al menos 8 caracteres"})
+
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+
+        login(request, user)
+
+        return JsonResponse({"success": True, "message": "Registrado correctamente"})
+
+    return JsonResponse({"success": False, "message": "Método no permitido"})
+
+def logout_user(request):
+    logout(request)
+    return redirect('home')

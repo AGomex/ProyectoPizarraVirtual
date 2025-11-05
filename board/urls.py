@@ -10,6 +10,9 @@ urlpatterns = [
 
     # --- Vistas principales ---
     path("", views.home, name="home"),
+    path('login-user/', views.login_user, name='login_user'),
+    path('register/', views.register_user, name='register_user'),
+    path("logout/", views.logout_user, name="logout_user"),
     path("canvas/", views.canvas_view, name="canvas_blank"), 
     path("canvas/<int:drawing_id>/", views.canvas_view, name="canvas"),  
     path("gallery/", views.gallery_view, name="gallery"),

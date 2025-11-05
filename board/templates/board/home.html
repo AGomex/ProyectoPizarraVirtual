@@ -15,15 +15,12 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-x: hidden;
-            /* Usa tu imagen de fondo aquí */
             background: url("{% static 'board/css/FondoSistema.jpg' %}") center center / cover no-repeat;
-            /* Fallback por si no carga la imagen */
             background-color: #0d7c8c;
             min-height: 100vh;
             position: relative;
         }
         
-        /* Overlay opcional para mejor legibilidad del texto */
         body::before {
             content: '';
             position: fixed;
@@ -97,6 +94,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s ease;
         }
 
         .login-btn svg {
@@ -189,25 +187,13 @@
             border-radius: 40px;
             padding: 50px;
             position: relative;
-            /* Cambia estas líneas para diferentes animaciones */
             transition: all 0.5s ease;
         }
 
         .board-card:hover {
-            /* OPCIÓN 1: Solo elevar (sin rotación) */
             transform: translateY(-15px) scale(1.05);
-            
-            /* OPCIÓN 2: Rotar ligeramente y elevar */
-            /* transform: translateY(-15px) rotate(2deg) scale(1.05); */
-            
-            /* OPCIÓN 3: Efecto zoom suave */
-            /* transform: scale(1.08); */
-            
-            /* OPCIÓN 4: Inclinación frontal */
-            /* transform: perspective(1000px) rotateX(5deg) translateY(-10px); */
         }
 
-        /* Fondo blanco detrás de la pizarra */
         .whiteboard-container {
             background: white;
             padding: 40px;
@@ -218,12 +204,283 @@
         .whiteboard {
             width: 450px;
             height: 300px;
-            /* Usa tu imagen de la pizarra aquí */
             background: url("{% static 'board/css/Pizarra.png' %}") center center / contain no-repeat;
-            /* Fallback por si no carga la imagen */
             background-color: transparent;
             border-radius: 8px;
             position: relative;
+        }
+
+        /* ========== MENÚ USUARIO MEJORADO ========== */
+        .user-menu {
+            position: relative;
+        }
+
+        /* Dropdown mejorado */
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            min-width: 200px;
+            list-style: none;
+            padding: 0;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        /* Flecha del dropdown */
+        .dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-left: 1px solid rgba(0, 0, 0, 0.08);
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            transform: rotate(45deg);
+        }
+
+        .dropdown li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown li a svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+        }
+
+        .dropdown li a:hover {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%);
+            color: #ef4444;
+            padding-left: 22px;
+        }
+
+        .dropdown li a:hover svg {
+            transform: translateX(2px);
+        }
+
+        /* ========== MODAL MEJORADO ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .hidden { 
+            display: none !important; 
+        }
+
+        .modal-content {
+            background: white;
+            width: 440px;
+            max-width: 90%;
+            padding: 0;
+            border-radius: 24px;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* Header del modal */
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 35px 35px 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .modal-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        /* Body del modal */
+        .modal-body {
+            padding: 35px;
+        }
+
+        /* Tabs mejoradas */
+        .tab-selector {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            background: #f5f5f5;
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .tab-selector button {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 12px;
+            cursor: pointer;
+            color: #666;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-selector button.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Input mejorado */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .input::placeholder {
+            color: #aaa;
+        }
+
+        /* Botones mejorados */
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.create {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn.create:hover {
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Error mejorado */
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            border-left: 4px solid #c33;
+            animation: slideUp 0.3s ease-out;
         }
 
         /* Responsive */
@@ -277,7 +534,20 @@
             .nav-links {
                 display: none;
             }
+
+            .modal-content {
+                width: 95%;
+            }
+
+            .modal-header {
+                padding: 30px 25px 20px;
+            }
+
+            .modal-body {
+                padding: 25px;
+            }
         }
+
     </style>
 </head>
 <body>
@@ -288,15 +558,43 @@
         </div>
         <ul class="nav-links">
             <li><a href="{% url 'home' %}">Inicio</a></li>
-            <li><a href="{% url 'canvas_blank' %}">Empezar a dibujar</a></li>
-            <li><a href="{% url 'gallery' %}">Galería</a></li>
-            <li><a href="{% url 'manual' %}">Manual de uso</a></li>
-            <li><a href="#" class="login-btn">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                Iniciar Sesión
-            </a></li>
+            <li><a href="#" onclick="requireLogin('{% url 'canvas_blank' %}')">Empezar a dibujar</a></li>
+            <li><a href="#" onclick="requireLogin('{% url 'gallery' %}')">Galería</a></li>
+            <li><a href="#" onclick="requireLogin('{% url 'manual' %}')">Manual de uso</a></li>
+
+            {% if user.is_authenticated %}
+                <li class="user-menu">
+                    <a href="#" class="login-btn" onclick="toggleUserMenu(event)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        {{ user.username }}
+                    </a>
+
+                    <ul id="logoutDropdown" class="dropdown hidden">
+                        <li>
+                            <a href="{% url 'logout_user' %}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            {% else %}
+                <li>
+                    <a href="#" class="login-btn" onclick="openModal()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        Iniciar Sesión
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     </nav>
 
@@ -314,7 +612,7 @@
                 dibujar, enseñar, colaborar,<br>
                 explicar, entretenimiento....
             </p>
-            <a href="{% url 'canvas_blank' %}" class="cta-button">
+            <a href="#" onclick="requireLogin('{% url 'canvas_blank' %}')" class="cta-button">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                 </svg>
@@ -331,5 +629,168 @@
             </div>
         </div>
     </div>
+
+<!-- MODAL LOGIN / REGISTRO MEJORADO -->
+<div id="authModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button onclick="closeModal()" class="close-btn">✕</button>
+            <h2 id="modalTitle">Bienvenido</h2>
+            <p id="modalSubtitle">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <div class="modal-body">
+            <div class="tab-selector">
+                <button id="tabLogin" onclick="showLogin()" class="active">Iniciar Sesión</button>
+                <button id="tabRegister" onclick="showRegister()">Crear Cuenta</button>
+            </div>
+
+            <!-- LOGIN -->
+            <form id="loginForm" method="POST">
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <label for="login-username">Usuario</label>
+                    <input type="text" id="login-username" name="username" class="input" placeholder="Ingresa tu usuario" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" name="password" class="input" placeholder="••••••••" required>
+                </div>
+
+                <p id="loginError" class="error hidden"></p>
+
+                <button type="submit" class="btn">Iniciar Sesión</button>
+            </form>
+
+            <!-- REGISTRO -->
+            <form id="registerForm" method="POST" class="hidden">
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <label for="register-username">Usuario</label>
+                    <input type="text" id="register-username" name="username" class="input" placeholder="Elige un nombre de usuario" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="register-email">Correo electrónico</label>
+                    <input type="email" id="register-email" name="email" class="input" placeholder="tu@email.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="register-password">Contraseña</label>
+                    <input type="password" id="register-password" name="password" class="input" placeholder="Mínimo 8 caracteres" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="register-password2">Confirmar Contraseña</label>
+                    <input type="password" id="register-password2" name="password2" class="input" placeholder="Confirmar contraseña" required>
+                </div>
+
+
+                <p id="registerError" class="error hidden"></p>
+
+                <button type="submit" class="btn create">Crear Cuenta</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 </body>
+<script>
+const modal = document.getElementById("authModal");
+let redirectTarget = null;
+
+function requireLogin(url){
+    {% if user.is_authenticated %}
+        window.location.href = url;
+    {% else %}
+        redirectTarget = url;
+        openModal();
+    {% endif %}
+}
+
+function openModal(){ modal.classList.remove("hidden"); }
+function closeModal(){ modal.classList.add("hidden"); }
+
+// 🔄 Cambiar pestañas
+function showLogin(){
+    document.getElementById("loginForm").classList.remove("hidden");
+    document.getElementById("registerForm").classList.add("hidden");
+    document.getElementById("tabLogin").classList.add("active");
+    document.getElementById("tabRegister").classList.remove("active");
+    document.getElementById("modalTitle").textContent = "Bienvenido de nuevo";
+    document.getElementById("modalSubtitle").textContent = "Ingresa tus credenciales para continuar";
+    document.getElementById("loginError").classList.add("hidden");
+}
+
+function showRegister(){
+    document.getElementById("loginForm").classList.add("hidden");
+    document.getElementById("registerForm").classList.remove("hidden");
+    document.getElementById("tabRegister").classList.add("active");
+    document.getElementById("tabLogin").classList.remove("active");
+    document.getElementById("modalTitle").textContent = "Crear cuenta";
+    document.getElementById("modalSubtitle").textContent = "Únete a VirtualBoard hoy";
+    document.getElementById("registerError").classList.add("hidden");
+}
+
+// ✅ Login
+document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    const resp = await fetch("{% url 'login_user' %}", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await resp.json();
+    if(data.success){
+        closeModal();
+        window.location.href = redirectTarget || "{% url 'home' %}";
+    } else {
+        loginError.textContent = data.message;
+        loginError.classList.remove("hidden");
+    }
+});
+
+// ✅ Registro AJAX
+document.getElementById("registerForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    const resp = await fetch("{% url 'register_user' %}", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await resp.json();
+    if(data.success){
+        closeModal();
+        window.location.href = redirectTarget || "{% url 'home' %}";
+    } else {
+        registerError.textContent = data.message;
+        registerError.classList.remove("hidden");
+    }
+});
+
+// ✅ Menú usuario
+function toggleUserMenu(event){
+    event.preventDefault();
+    const dropdown = document.getElementById("logoutDropdown");
+    dropdown.classList.toggle("hidden");
+}
+
+// Ocultar el menú si haces clic fuera
+document.addEventListener("click", function(e){
+    const menu = document.getElementById("logoutDropdown");
+    const btn = document.querySelector(".user-menu a");
+    if(menu && !menu.contains(e.target) && !btn.contains(e.target)){
+        menu.classList.add("hidden");
+    }
+});
+
+</script>
+
 </html>
