@@ -1,4 +1,4 @@
-from board.models import Drawing
+from board.infrastructure.django.models import Drawing
 from django.utils import timezone
 import cv2
 import numpy as np

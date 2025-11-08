@@ -1,5 +1,5 @@
 import time
-from board.actions import save_action
+from board.application.actions import save_action
 
 # Control de tiempo para evitar múltiples activaciones seguidas
 _last_action_time = 0

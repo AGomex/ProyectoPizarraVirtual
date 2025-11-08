@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from board.actions import save_action
+from board.application.actions import save_action
 
 # ----------------------
 # 🔹 Estado global del módulo
@@ -63,7 +63,7 @@ def draw_shape_panel(frame):
 
     total_buttons = len(shapes_list)
     panel_width = total_buttons * (BUTTON_SIZE + BUTTON_MARGIN) + 20
-    panel_height = BUTTON_SIZE + 60
+    panel_height = BUTTON_SIZE + 35
 
     # 🔹 Centrar horizontalmente y ubicar arriba — usar dimensiones reales del frame
     h, w = frame.shape[:2]
@@ -80,13 +80,11 @@ def draw_shape_panel(frame):
     cv2.rectangle(frame, (x_start, y_start),
                   (x_start + panel_width, y_start + panel_height),
                   (180, 180, 180), 2)
-    cv2.putText(frame, "Formas", (x_start + 10, y_start + 25),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (50, 50, 50), 2)
 
     # Dibujar botones en una fila
     for i, name in enumerate(shapes_list):
         x1 = x_start + 10 + i * (BUTTON_SIZE + BUTTON_MARGIN)
-        y1 = y_start + 35
+        y1 = y_start + 20
         x2 = x1 + BUTTON_SIZE
         y2 = y1 + BUTTON_SIZE
 

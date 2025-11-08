@@ -1,0 +1,34 @@
+board/
+│
+├─ domain/
+│   ├─ entities/
+│   │   ├─ stroke.py
+│   │   ├─ point.py
+│   │   └─ shape.py
+│   └─ services/
+│       └─ enhance_service.py
+│
+├─ application/
+│   ├─ actions/
+│   └─ use_cases/
+│
+└─ infrastructure/
+    ├─ opencv/
+    │   ├─ draw_utils.py
+    │   └─ video_capture_manager.py
+    └─ django/
+        ├─ models.py
+        ├─ views.py
+        ├─ urls.py
+        ├─ templates/
+        │   └─ board/
+        │       ├─ base.html
+        │       ├─ home.html
+        │       ├─ canvas.html
+        │       ├─ manual.html
+        │       └─ gallery.html
+        └─ static/
+            └─ board/
+                └─ icons/
+media/
+└─ thumbs/

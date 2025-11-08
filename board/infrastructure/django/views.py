@@ -1,27 +1,26 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-import json
-from .models import Drawing
-from django.http import StreamingHttpResponse
-from .opencv_scripts.video_stream import generate_frames, generate_camera_frames
-from board.actions import save_action
-import cv2
-import numpy as np
-import os
-from django.conf import settings
+from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
+import json
+import os
+import cv2
+import numpy as np
+
+from board.infrastructure.django.models import Drawing
+
+from board.application.use_cases.video_stream import (
+    generate_frames,
+    generate_camera_frames,
+)
+
+from board.application.actions import save_action
 
 @require_GET
-# def check_unsaved_changes(request):
-#     """
-#     Devuelve si hay cambios sin guardar en el lienzo actual.
-#     """
-#     unsaved = getattr(save_action, "unsaved_changes", False)
-#     return JsonResponse({"unsaved": unsaved})
 def check_unsaved_changes(request):
     """
     Devuelve si hay cambios sin guardar en el lienzo actual.
@@ -82,9 +81,6 @@ def get_drawing(request, pk):
 
 def home(request):
     return render(request, 'board/home.html')
-
-from django.shortcuts import render, get_object_or_404
-from .models import Drawing
 
 @login_required
 def canvas_view(request, drawing_id=None):

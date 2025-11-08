@@ -1,6 +1,12 @@
 import cv2
 import numpy as np
 import math
+from board.domain.services.enhance_service import EnhanceServicePort
+
+class EnhanceStrokeService(EnhanceServicePort):
+    def enhance_stroke(self, points):
+        return enhance_stroke(points) 
+
 
 def enhance_stroke(points):
     """
