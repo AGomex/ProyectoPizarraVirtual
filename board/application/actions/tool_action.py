@@ -90,7 +90,7 @@ def draw_brush_panel(frame):
     # Determinar tamaño actual según herramienta
     size = brush_size_eraser if current_tool == "eraser" else brush_size_paint
     fill_w = int(panel_w * (size / MAX_BRUSH))
-    color = (0, 160, 0) if current_tool == "brush" else (60, 60, 60)  # verde o gris oscuro
+    color = (0, 160, 0) if current_tool == "brush" else (0, 160, 0)  
     cv2.rectangle(frame, (x, y), (x + fill_w, y + panel_h), color, -1)
 
     # Texto

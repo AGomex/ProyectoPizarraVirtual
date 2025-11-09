@@ -330,7 +330,7 @@ def generate_frames(drawing_id=None):
                 pointer_color = (
                     (0, 0, 255) if mode == "select"
                     else (255, 0, 255) if mode == "enhance"
-                    else (255, 255, 255) if mode == "eraser"
+                    else (95, 99, 102) if mode == "eraser"
                     else (0, 255, 0)
                 )
                 cv2.circle(output, (cx, cy), 6, pointer_color, -1)

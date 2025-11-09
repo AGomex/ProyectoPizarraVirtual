@@ -80,11 +80,13 @@ def draw_shape_panel(frame):
     cv2.rectangle(frame, (x_start, y_start),
                   (x_start + panel_width, y_start + panel_height),
                   (180, 180, 180), 2)
+    cv2.putText(frame, "Formas", (x_start + 10, y_start + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (50, 50, 50), 2)
 
     # Dibujar botones en una fila
     for i, name in enumerate(shapes_list):
         x1 = x_start + 10 + i * (BUTTON_SIZE + BUTTON_MARGIN)
-        y1 = y_start + 20
+        y1 = y_start + 25
         x2 = x1 + BUTTON_SIZE
         y2 = y1 + BUTTON_SIZE
 
@@ -199,7 +201,8 @@ def draw_shape(canvas, start, end, color, thickness):
     elif shape_selected == "line":
         cv2.line(canvas, (x1, y1), (x2, y2), color, thickness)
     elif shape_selected == "triangle":
-        pts = np.array([[cx, cy - size], [cx - size, cy + size], [cx + size, cy + size]], np.int32)
+          # 🔹 Mantener orientación igual a la figura guardada
+        pts = np.array([[cx, y1], [x1, y2], [x2, y2]], np.int32)
         cv2.polylines(canvas, [pts], True, color, thickness)
     elif shape_selected == "star":
         points = []
@@ -247,6 +250,9 @@ def add_shape_to_strokes(start, end, color, thickness):
             x = int(cx + radius * np.cos(rad))
             y = int(cy + radius * np.sin(rad))
             points.append((x, y))
+         # 🔹 Asegurar cierre perfecto del círculo
+        if points:
+            points.append(points[0])
     elif shape_selected == "line":
         points = [start, end]
     elif shape_selected == "triangle":

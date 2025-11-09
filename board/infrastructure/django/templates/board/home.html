@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VirtualBoard - Pizarra Virtual</title>
+    <title>VirtualBoard - Pizarra Virtual Profesional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,13 +13,20 @@
             box-sizing: border-box;
         }
 
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden;
+            height: 100vh;
+            overflow: hidden;
             background: url("{% static 'board/css/FondoSistema.jpg' %}") center center / cover no-repeat;
             background-color: #0d7c8c;
-            min-height: 100vh;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
         
         body::before {
@@ -32,162 +40,251 @@
             z-index: -1;
         }
 
-        /* Navegación */
+        /* Navegación Profesional */
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 60px;
+            padding: clamp(16px, 3vw, 24px) clamp(20px, 5vw, 80px);
             background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 100;
+            min-height: 70px;
         }
 
         .logo {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
         }
 
-        .logo span:first-child {
+        .logo .virtual-text {
             color: #fbbf24;
         }
 
-        .logo span:last-child {
+        .logo .board-text {
             color: white;
         }
 
         .nav-links {
             display: flex;
-            gap: 40px;
+            gap: clamp(20px, 3vw, 48px);
             align-items: center;
             list-style: none;
         }
 
         .nav-links a {
-            color: white;
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            font-size: 1.1rem;
+            font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+            font-weight: 600;
             transition: all 0.3s ease;
             position: relative;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
         }
 
         .nav-links a::after {
             content: '';
             position: absolute;
-            bottom: -5px;
-            left: 0;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 0;
             height: 2px;
-            background: #fbbf24;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
             transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .nav-links a:hover {
+            color: white;
         }
 
         .nav-links a:hover::after {
             width: 100%;
         }
-
+        
         .login-btn {
-            padding: 10px 25px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
+            padding: clamp(10px, 1.5vw, 12px) clamp(20px, 2vw, 28px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            white-space: nowrap;
         }
 
         .login-btn svg {
             width: 18px;
             height: 18px;
+            flex-shrink: 0;
         }
 
         .login-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
-        /* Contenedor principal */
+        /* Contenedor Principal */
         .main-container {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 80px 60px;
-            gap: 60px;
-            max-width: 1400px;
+            padding: clamp(30px, 5vw, 60px) clamp(20px, 5vw, 80px);
+            gap: clamp(30px, 5vw, 80px);
+            max-width: 1600px;
             margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            overflow-y: auto;
         }
 
-        /* Sección de texto */
+        /* Sección de Texto Mejorada */
         .text-section {
             flex: 1;
             color: white;
+            animation: fadeInLeft 0.8s ease-out;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            min-width: 0;
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .text-section h1 {
-            font-size: 4rem;
+            font-size: clamp(2rem, 5vw, 4.5rem);
             font-weight: 800;
             line-height: 1.1;
-            margin-bottom: 30px;
-            color: #000;
+            margin-bottom: clamp(16px, 2vw, 24px);
+            letter-spacing: -2px;
         }
 
-        .text-section h1 .virtual {
+        .text-section h1 .virtual-yellow {
             color: #fbbf24;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .text-section h1 .board {
+        .text-section h1 .board-white {
             color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .text-section p {
-            font-size: 1.3rem;
-            line-height: 1.6;
-            margin-bottom: 40px;
-            color: #000;
+        .text-section h1 .white-text {
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .text-section .subtitle {
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            line-height: 1.8;
+            margin-bottom: clamp(24px, 3vw, 40px);
+            color: #ffffff;
             font-weight: 500;
+            max-width: 490px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            text-align: justify;
+            align-self: center;
         }
 
         .cta-button {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 18px 40px;
-            background: #fbbf24;
+            justify-content: center;
+            gap: 12px;
+            padding: clamp(16px, 2vw, 20px) clamp(32px, 4vw, 48px);
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
             color: #000;
             text-decoration: none;
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 1.3vw, 1.1rem);
             font-weight: 700;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.4);
+            position: relative;
+            overflow: hidden;
+            align-self: center;
+            white-space: nowrap;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
         }
 
         .cta-button svg {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
         }
 
         .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.5);
-            background: #fcd34d;
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(251, 191, 36, 0.5);
         }
 
-        /* Sección de imagen */
+        /* Sección de Imagen */
         .image-section {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
+            animation: fadeInRight 0.8s ease-out;
+            min-width: 0;
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .board-card {
             background: transparent;
             border-radius: 40px;
-            padding: 50px;
+            padding: clamp(15px, 2vw, 30px);
             position: relative;
             transition: all 0.5s ease;
+            width: 100%;
+            max-width: 600px;
         }
 
         .board-card:hover {
@@ -196,66 +293,100 @@
 
         .whiteboard-container {
             background: white;
-            padding: 40px;
+            padding: clamp(20px, 3vw, 30px);
             border-radius: 20px;
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
         }
 
         .whiteboard {
-            width: 450px;
-            height: 300px;
+            width: 100%;
+            aspect-ratio: 500 / 340;
+            max-width: 500px;
             background: url("{% static 'board/css/Pizarra.png' %}") center center / contain no-repeat;
-            background-color: transparent;
             border-radius: 8px;
             position: relative;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-weight: 600;
         }
 
-        /* ========== MENÚ USUARIO MEJORADO ========== */
+        /* Footer Profesional */
+        footer {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: clamp(16px, 2vw, 20px) clamp(20px, 5vw, 80px);
+            color: white;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .copyright {
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        /* Menú Usuario Mejorado */
         .user-menu {
             position: relative;
         }
 
-        /* Dropdown mejorado */
         .dropdown {
             position: absolute;
-            top: calc(100% + 12px);
+            top: calc(100% + 16px);
             right: 0;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            min-width: 200px;
+            min-width: 180px;
             list-style: none;
-            padding: 0;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 8px;
+            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 1000;
             border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
-        /* Flecha del dropdown */
-        .dropdown::before {
-            content: '';
-            position: absolute;
-            top: -6px;
-            right: 20px;
-            width: 12px;
-            height: 12px;
-            background: white;
-            border-left: 1px solid rgba(0, 0, 0, 0.08);
-            border-top: 1px solid rgba(0, 0, 0, 0.08);
-            transform: rotate(45deg);
+        .dropdown li a::after {
+            display: none !important;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .dropdown li a {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            color: #333;
+            justify-content: center;
+            gap: 10px;
+            padding: clamp(10px, 1.5vw, 12px) clamp(20px, 2vw, 28px);
+            color: #1a202c;
             text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            font-weight: 600;
             transition: all 0.2s ease;
+            border-radius: 10px;
+            white-space: nowrap;
         }
 
         .dropdown li a svg {
@@ -265,45 +396,31 @@
         }
 
         .dropdown li a:hover {
-            background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
             color: #ef4444;
-            padding-left: 22px;
         }
 
-        .dropdown li a:hover svg {
-            transform: translateX(2px);
-        }
-
-        /* ========== MODAL MEJORADO ========== */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { 
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
+        /* Modal Mejorado */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
             animation: fadeIn 0.3s ease-out;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .hidden { 
@@ -312,46 +429,60 @@
 
         .modal-content {
             background: white;
-            width: 440px;
-            max-width: 90%;
+            width: 100%;
+            max-width: 480px;
             padding: 0;
-            border-radius: 24px;
+            border-radius: 28px;
             position: relative;
             animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
-        /* Header del modal */
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(40px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         .modal-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 35px 35px 25px;
+            padding: clamp(32px, 5vw, 48px) clamp(24px, 4vw, 40px) clamp(24px, 3vw, 32px);
             text-align: center;
             position: relative;
         }
 
         .modal-header h2 {
             color: white;
-            font-size: 28px;
-            font-weight: 700;
+            font-size: clamp(24px, 4vw, 32px);
+            font-weight: 800;
             margin-bottom: 8px;
             letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
         }
 
         .modal-header p {
             color: rgba(255, 255, 255, 0.9);
-            font-size: 14px;
+            font-size: clamp(13px, 2vw, 15px);
             font-weight: 400;
+            position: relative;
+            z-index: 1;
         }
 
         .close-btn {
             position: absolute;
-            right: 20px;
-            top: 20px;
+            right: 24px;
+            top: 24px;
             background: rgba(255, 255, 255, 0.2);
             border: none;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             font-size: 20px;
             cursor: pointer;
@@ -360,6 +491,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            z-index: 2;
         }
 
         .close-btn:hover {
@@ -367,30 +499,28 @@
             transform: rotate(90deg);
         }
 
-        /* Body del modal */
         .modal-body {
-            padding: 35px;
+            padding: clamp(24px, 4vw, 40px);
         }
 
-        /* Tabs mejoradas */
         .tab-selector {
             display: flex;
             gap: 0;
-            margin-bottom: 30px;
-            background: #f5f5f5;
-            padding: 4px;
-            border-radius: 12px;
+            margin-bottom: 32px;
+            background: #f3f4f6;
+            padding: 6px;
+            border-radius: 14px;
         }
 
         .tab-selector button {
             flex: 1;
             background: transparent;
             border: none;
-            font-size: 15px;
+            font-size: clamp(13px, 2vw, 15px);
             font-weight: 600;
-            padding: 12px;
+            padding: 14px;
             cursor: pointer;
-            color: #666;
+            color: #6b7280;
             border-radius: 10px;
             transition: all 0.3s ease;
         }
@@ -398,12 +528,253 @@
         .tab-selector button.active {
             background: white;
             color: #667eea;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        /* Input mejorado */
         .input-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: clamp(13px, 1.5vw, 14px);
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+            padding-left: 4px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 14px;
+            font-size: clamp(14px, 1.5vw, 15px);
+            transition: all 0.3s ease;
+            background: #f9fafb;
+            font-family: inherit;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 5px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            font-size: clamp(14px, 2vw, 16px);
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            margin-top: 12px;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn.create {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 10px 25px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn.create:hover {
+            box-shadow: 0 15px 30px rgba(251, 191, 36, 0.5);
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: clamp(12px, 1.5vw, 14px);
             margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+            animation: slideUp 0.3s ease-out;
+            font-weight: 500;
+        }
+
+        /* Responsive Mejorado para PC y Laptops */
+        
+        /* Pantallas muy grandes (1920px+) */
+        @media (min-width: 1920px) {
+            .main-container {
+                max-width: 1800px;
+            }
+        }
+
+        /* Laptops grandes (1440px - 1919px) */
+        @media (max-width: 1600px) {
+            .text-section h1 {
+                font-size: 4rem;
+            }
+            .whiteboard {
+                max-width: 450px;
+            }
+        }
+
+        /* Laptops medianas (1200px - 1439px) */
+        @media (max-width: 1440px) {
+            nav, .main-container, footer {
+                padding-left: 60px;
+                padding-right: 60px;
+            }
+            .text-section h1 {
+                font-size: 3.5rem;
+            }
+            .whiteboard {
+                max-width: 400px;
+            }
+        }
+
+        /* Laptops pequeñas (1024px - 1199px) */
+        @media (max-width: 1200px) {
+            nav, .main-container, footer {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+            .nav-links {
+                gap: 32px;
+            }
+            .text-section h1 {
+                font-size: 3rem;
+            }
+            .whiteboard {
+                max-width: 380px;
+            }
+        }
+
+        /* Tablets y laptops muy pequeñas (768px - 1023px) */
+        @media (max-width: 1024px) {
+            .nav-links a {
+                font-size: 0.95rem;
+            }
+            .main-container {
+                gap: 40px;
+                padding: 40px 30px;
+            }
+            .text-section h1 {
+                font-size: 2.8rem;
+            }
+            .whiteboard {
+                max-width: 350px;
+            }
+        }
+
+        /* Tablets (768px - 967px) */
+        @media (max-width: 968px) {
+            .main-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .text-section, .image-section {
+                width: 100%;
+            }
+            .nav-links {
+                gap: 24px;
+            }
+            .nav-links a {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Móviles grandes y tablets pequeñas (640px - 767px) */
+        @media (max-width: 768px) {
+            .nav-links li:not(.user-menu):not(:last-child) {
+                display: none;
+            }
+            .text-section h1 {
+                font-size: 2.5rem;
+            }
+            .whiteboard {
+                max-width: 320px;
+            }
+        }
+
+        /* Móviles (menos de 640px) */
+        @media (max-width: 640px) {
+            nav, footer {
+                padding: 20px;
+            }
+            .logo {
+                font-size: 1.5rem;
+            }
+            .text-section h1 {
+                font-size: 2rem;
+            }
+            .whiteboard {
+                max-width: 280px;
+            }
+            .modal-content {
+                margin: 10px;
+            }
+        }
+        /* ========== SOLUCIÓN PARA ELIMINAR SCROLL EN MODAL ========== */
+
+        /* 1. Modal ocupa toda la altura disponible con scroll interno */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-out;
+            overflow-y: auto; /* Permitir scroll SOLO si es necesario */
+            padding: 20px;
+        }
+
+        /* 2. Contenido del modal con altura máxima controlada */
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            max-height: calc(100vh - 40px); /* Dejar 20px arriba y abajo */
+            padding: 0;
+            border-radius: 28px;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 3. Header fijo (no scrollea) */
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px 40px 24px;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0; /* No se reduce */
+        }
+
+        /* 4. Body con scroll interno si es necesario */
+        .modal-body {
+            padding: 32px 40px;
+            /* Solo el body tiene scroll */
+            flex: 1; /* Ocupa el espacio restante */
+        }
+
+        /* 5. Reducir espaciado entre campos */
+        .input-group {
+            margin-bottom: 18px; /* Reducido de 24px */
             position: relative;
         }
 
@@ -411,150 +782,174 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
+            color: #1f2937;
+            margin-bottom: 8px; /* Reducido de 10px */
             padding-left: 4px;
         }
 
         .input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px 16px; /* Reducido de 16px 18px */
             border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 15px;
+            border-radius: 14px;
+            font-size: 14px;
             transition: all 0.3s ease;
-            background: #fafafa;
+            background: #f9fafb;
+            font-family: inherit;
         }
 
-        .input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-
-        .input::placeholder {
-            color: #aaa;
-        }
-
-        /* Botones mejorados */
+        /* 6. Botón más compacto */
         .btn {
             width: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 16px; /* Reducido de 18px */
+            border-radius: 14px;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            margin-top: 10px;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            margin-top: 8px; /* Reducido de 12px */
+            font-family: inherit;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        /* 7. Tab selector más compacto */
+        .tab-selector {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px; /* Reducido de 32px */
+            background: #f3f4f6;
+            padding: 6px;
+            border-radius: 14px;
         }
 
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn.create {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
-        }
-
-        .btn.create:hover {
-            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
-        }
-
-        /* Error mejorado */
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 12px 16px;
-            border-radius: 10px;
+        .tab-selector button {
+            flex: 1;
+            background: transparent;
+            border: none;
             font-size: 14px;
-            margin-bottom: 16px;
-            border-left: 4px solid #c33;
+            font-weight: 600;
+            padding: 12px; /* Reducido de 14px */
+            cursor: pointer;
+            color: #6b7280;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* 8. Error message más compacto */
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px; /* Reducido de 14px 18px */
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 16px; /* Reducido de 20px */
+            border-left: 4px solid #dc2626;
             animation: slideUp 0.3s ease-out;
+            font-weight: 500;
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .main-container {
-                flex-direction: column;
-                text-align: center;
-                padding: 60px 30px;
-            }
-
-            .text-section h1 {
-                font-size: 3rem;
-            }
-
-            nav {
-                padding: 20px 30px;
-            }
-
-            .nav-links {
-                gap: 20px;
-            }
-
-            .whiteboard {
-                width: 350px;
-                height: 250px;
-            }
-
-            .whiteboard-container {
-                padding: 30px;
-            }
+        /* 9. Scrollbar personalizado para el modal-body */
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
         }
 
-        @media (max-width: 768px) {
-            .text-section h1 {
-                font-size: 2.5rem;
-            }
+        .modal-body::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 10px;
+        }
 
-            .text-section p {
-                font-size: 1.1rem;
-            }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
 
-            .whiteboard {
-                width: 300px;
-                height: 200px;
-            }
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
 
-            .whiteboard-container {
-                padding: 25px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .modal-content {
-                width: 95%;
-            }
-
+        /* 10. Responsive: Ajustes para pantallas pequeñas */
+        @media (max-height: 700px) {
             .modal-header {
-                padding: 30px 25px 20px;
+                padding: 24px 32px 20px;
             }
-
+            
+            .modal-header h2 {
+                font-size: 24px;
+                margin-bottom: 4px;
+            }
+            
+            .modal-header p {
+                font-size: 13px;
+            }
+            
             .modal-body {
-                padding: 25px;
+                padding: 24px 32px;
+            }
+            
+            .input-group {
+                margin-bottom: 14px;
+            }
+            
+            .input {
+                padding: 12px 14px;
+            }
+            
+            .btn {
+                padding: 14px;
+            }
+            
+            .tab-selector {
+                margin-bottom: 20px;
             }
         }
 
+        @media (max-height: 600px) {
+            .modal-content {
+                max-height: calc(100vh - 20px);
+            }
+            
+            .modal-header {
+                padding: 20px 24px 16px;
+            }
+            
+            .modal-body {
+                padding: 20px 24px;
+            }
+        }
+
+        /* 11. Ajuste para móviles */
+        @media (max-width: 640px) {
+            .modal-overlay {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                max-height: calc(100vh - 20px);
+                border-radius: 20px;
+            }
+            
+            .modal-header {
+                padding: 24px 20px 20px;
+            }
+            
+            .modal-body {
+                padding: 24px 20px;
+            }
+            
+            .input-group {
+                margin-bottom: 16px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Navegación -->
     <nav>
         <div class="logo">
-            <span>Virtual</span><span>Board</span>
+            <span class="virtual-text">Virtual</span><span class="board-text">Board</span>
         </div>
         <ul class="nav-links">
             <li><a href="{% url 'home' %}">Inicio</a></li>
@@ -603,15 +998,13 @@
         <!-- Sección de Texto -->
         <div class="text-section">
             <h1>
-                Plasma tus<br>
-                ideas con<br>
-                <span class="virtual">Virtual</span><span class="board">Board</span>
+                <span class="white-text">Plasma tus ideas<br>con </span><span class="virtual-yellow">Virtual</span><span class="board-white">Board</span>
             </h1>
-            <p>
-                Pizarra virtual diseñada para<br>
-                dibujar, enseñar, colaborar,<br>
-                explicar, entretenimiento....
+            <p class="subtitle">
+                La plataforma profesional para dibujar, enseñar y colaborar en tiempo real. 
+                Transforma tu creatividad en realidad digital.
             </p>
+            
             <a href="#" onclick="requireLogin('{% url 'canvas_blank' %}')" class="cta-button">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
@@ -630,7 +1023,15 @@
         </div>
     </div>
 
-<!-- MODAL LOGIN / REGISTRO MEJORADO -->
+    <!-- Footer -->
+    <!-- <footer>
+        <div class="footer-content">
+            <p class="copyright">© 2025 VirtualBoard</p>
+            
+        </div>
+    </footer> -->
+
+<!-- Modal -->
 <div id="authModal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
@@ -645,59 +1046,44 @@
                 <button id="tabRegister" onclick="showRegister()">Crear Cuenta</button>
             </div>
 
-            <!-- LOGIN -->
             <form id="loginForm" method="POST">
                 {% csrf_token %}
-                
                 <div class="input-group">
                     <label for="login-username">Usuario</label>
                     <input type="text" id="login-username" name="username" class="input" placeholder="Ingresa tu usuario" required>
-                </div>
-
-                <div class="input-group">
+                </div><div class="input-group">
                     <label for="login-password">Contraseña</label>
                     <input type="password" id="login-password" name="password" class="input" placeholder="••••••••" required>
                 </div>
-
                 <p id="loginError" class="error hidden"></p>
-
                 <button type="submit" class="btn">Iniciar Sesión</button>
             </form>
 
-            <!-- REGISTRO -->
             <form id="registerForm" method="POST" class="hidden">
                 {% csrf_token %}
-                
                 <div class="input-group">
                     <label for="register-username">Usuario</label>
                     <input type="text" id="register-username" name="username" class="input" placeholder="Elige un nombre de usuario" required>
                 </div>
-
                 <div class="input-group">
                     <label for="register-email">Correo electrónico</label>
                     <input type="email" id="register-email" name="email" class="input" placeholder="tu@email.com" required>
                 </div>
-
                 <div class="input-group">
                     <label for="register-password">Contraseña</label>
                     <input type="password" id="register-password" name="password" class="input" placeholder="Mínimo 8 caracteres" required>
                 </div>
-
                 <div class="input-group">
                     <label for="register-password2">Confirmar Contraseña</label>
                     <input type="password" id="register-password2" name="password2" class="input" placeholder="Confirmar contraseña" required>
                 </div>
-
-
                 <p id="registerError" class="error hidden"></p>
-
                 <button type="submit" class="btn create">Crear Cuenta</button>
             </form>
         </div>
     </div>
 </div>
 
-</body>
 <script>
 const modal = document.getElementById("authModal");
 let redirectTarget = null;
@@ -711,10 +1097,16 @@ function requireLogin(url){
     {% endif %}
 }
 
-function openModal(){ modal.classList.remove("hidden"); }
-function closeModal(){ modal.classList.add("hidden"); }
+function openModal(){ 
+    modal.classList.remove("hidden"); 
+    document.body.style.overflow = 'hidden';
+}
 
-// 🔄 Cambiar pestañas
+function closeModal(){ 
+    modal.classList.add("hidden"); 
+    document.body.style.overflow = '';
+}
+
 function showLogin(){
     document.getElementById("loginForm").classList.remove("hidden");
     document.getElementById("registerForm").classList.add("hidden");
@@ -735,7 +1127,6 @@ function showRegister(){
     document.getElementById("registerError").classList.add("hidden");
 }
 
-// ✅ Login
 document.getElementById("loginForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -755,7 +1146,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e)=>{
     }
 });
 
-// ✅ Registro AJAX
 document.getElementById("registerForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -775,14 +1165,12 @@ document.getElementById("registerForm").addEventListener("submit", async (e)=>{
     }
 });
 
-// ✅ Menú usuario
 function toggleUserMenu(event){
     event.preventDefault();
     const dropdown = document.getElementById("logoutDropdown");
     dropdown.classList.toggle("hidden");
 }
 
-// Ocultar el menú si haces clic fuera
 document.addEventListener("click", function(e){
     const menu = document.getElementById("logoutDropdown");
     const btn = document.querySelector(".user-menu a");
@@ -791,6 +1179,20 @@ document.addEventListener("click", function(e){
     }
 });
 
+// Cerrar modal con tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+    }
+});
+
+// Cerrar modal al hacer clic fuera
+modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+        closeModal();
+    }
+});
 </script>
 
+</body>
 </html>

@@ -81,7 +81,7 @@ def save_current_drawing(name="Untitled", width=640, height=480):
     global current_drawing, current_strokes, unsaved_changes
 
     if not current_strokes:
-        print("[⚠️] Dibujo vacío, no se guardará.")
+        print("[⚠] Dibujo vacío, no se guardará.")
         return None
 
     # 🔹 Crear nuevo dibujo si no existe
@@ -95,6 +95,7 @@ def save_current_drawing(name="Untitled", width=640, height=480):
         print(f"[SAVE] Dibujo nuevo creado (ID={current_drawing.id})")
     else:
         # 🔹 Actualizar dibujo existente
+        current_drawing.name = name
         current_drawing.strokes = current_strokes
         current_drawing.save(update_fields=["name", "strokes", "updated_at"])
         print(f"[UPDATE] Dibujo existente actualizado (ID={current_drawing.id})")
@@ -109,7 +110,7 @@ def save_current_drawing(name="Untitled", width=640, height=480):
         # Asignar ruta relativa para que Django pueda servirla
         current_drawing.thumbnail = f"thumbs/thumb_{current_drawing.id}.jpg"
         current_drawing.save(update_fields=["thumbnail"])
-        print(f"[🖼️] Miniatura generada: {current_drawing.thumbnail}")
+        print(f"[🖼] Miniatura generada: {current_drawing.thumbnail}")
     except Exception as e:
         print(f"[ERROR] No se pudo generar miniatura: {e}")
 

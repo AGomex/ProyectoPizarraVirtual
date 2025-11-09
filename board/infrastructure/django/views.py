@@ -215,11 +215,10 @@ def save_drawing_with_name(request):
                 "message": "No se puede guardar un dibujo vacío"
             })
         
-        # 🔹 VERIFICAR SI YA EXISTE UN DIBUJO CON ESE NOMBRE (case-insensitive)
-        # Obtenemos todos los dibujos y comparamos manualmente en Python
+        # 🔹 VERIFICAR SI YA EXISTE OTRO DIBUJO CON ESE NOMBRE
         all_drawings = Drawing.objects.filter(user=request.user)
 
-        # Si estamos editando un dibujo existente, excluirlo
+        # 🔹 IMPORTANTE: Excluir el dibujo actual de la búsqueda (si existe)
         if save_action.current_drawing and save_action.current_drawing.id:
             all_drawings = all_drawings.exclude(id=save_action.current_drawing.id)
 
@@ -228,16 +227,17 @@ def save_drawing_with_name(request):
             if drawing.name.lower() == drawing_name.lower():
                 return JsonResponse({
                     "success": False,
-                    "message": f"Ya existe un dibujo con el nombre '{drawing_name}'. Por favor elige otro nombre."
-        })
+                    "message": f"Ya existe un dibujo con el nombre '{drawing_name}'. Por favor elige otro nombre.",
+                    "duplicate": True
+                })
         
-        # Guardar
+        # 🔹 GUARDAR (siempre actualiza si existe, o crea nuevo si no existe)
         drawing = save_action.save_current_drawing(name=drawing_name)
+        
         if drawing:
             drawing.user = request.user
             drawing.save(update_fields=["user"])
 
-        if drawing:
             return JsonResponse({
                 "success": True,
                 "message": f"Dibujo '{drawing_name}' guardado correctamente",

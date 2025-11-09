@@ -110,18 +110,16 @@
         .recent-drawings-section {
             width: 90%;
             margin-top: 20px;
-            
         }
 
         .recent-title {
             font-size: 1rem;
-            font-weight: 800;
+            font-weight: 700;
             color: #374151;
             margin-bottom: 15px;
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            
         }
 
         /* Carrusel de dibujos */
@@ -374,7 +372,7 @@
                     </a>
                     <span class="button-label">Inicio</span>
                 </div>
-                
+
                 <!-- Botón GALERÍA (corregido) -->
                 <div class="button-wrapper">
                     <a href='/gallery' class="gallery-btn" title="Ir a Galeria">
@@ -382,7 +380,6 @@
                     </a>
                     <span class="button-label">Galería</span>
                 </div>
-                
             </div>
 
             <img id="camera" src="{% url 'camera_feed' %}" alt="Cámara">
@@ -538,7 +535,6 @@
         let pointerInterval;
         let fastPolling = false;
         let lastSaveRequest = false;
-        let isProcessingSave = false;
 
         async function updatePointer() {
             try {
@@ -560,10 +556,9 @@
                 }
 
                 // 🔹 DETECTAR SOLICITUD DE GUARDADO (solo una vez)
-                if (data.action === "save_requested" && !lastSaveRequest && !isProcessingSave) {
+                if (data.action === "save_requested" && !lastSaveRequest) {
                     lastSaveRequest = true;
-                    isProcessingSave = true; // 🔒 Activar bloqueo de botones
-                    
+
                     let savedSuccessfully = false;
 
                     // Bucle para repetir el input si hay error de nombre duplicado
@@ -619,12 +614,11 @@
                                 title: '¡Guardado!',
                                 text: result.message,
                                 confirmButtonColor: '#10b981',
-                                timer: 1500,
+                                timer: 2000,
                                 timerProgressBar: true,
                                 showConfirmButton: false
                             });
                             savedSuccessfully = true;
-                            // ✅ CORRECCIÓN: Redirigir al dibujo guardado en lugar de reload
                             setTimeout(() => window.location.reload(), 2000);
                         } else {
                             // Si hay error (nombre duplicado u otro), mostrar el error
@@ -712,7 +706,7 @@
             // Mostrar alerta de confirmación
             const result = await Swal.fire({
                 icon: 'warning',
-                title: '⚠️ Cambios sin guardar',
+                title: '⚠ Cambios sin guardar',
                 text: 'Tienes un dibujo sin guardar. ¿Qué deseas hacer?',
                 showDenyButton: true,
                 showCancelButton: true,
@@ -787,10 +781,9 @@
                         });
                         savedSuccessfully = true;
                         allowNavigation = true;
-                        // ✅ CORRECCIÓN: Redirigir al dibujo guardado en lugar de targetUrl
                         setTimeout(() => {
                             window.location.href = targetUrl;
-                        }, 1000);
+                        }, 1500);
                     } else {
                         await Swal.fire({
                             icon: 'error',
@@ -831,7 +824,7 @@
                     allowNavigation = true;
                     setTimeout(() => {
                         window.location.href = targetUrl;
-                    }, 1000);
+                    }, 1500);
                 }
             }
             // ⚫ CANCELAR - No hace nada, se queda en la pizarra

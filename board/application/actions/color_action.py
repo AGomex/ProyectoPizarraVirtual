@@ -95,19 +95,19 @@ def draw_advanced_color_panel(frame, h, w, pointer_x=None, pointer_y=None, finge
 
     block_size = 22
     block_spacing = 3
-    padding = 8
+    padding = 12
     container_w = 320
-    container_h = 285
-    panel_x = 50
-    panel_y = 95
+    container_h = 270
+    panel_x = 120
+    panel_y = 90
 
     # Fondo del panel
     cv2.rectangle(frame, (panel_x, panel_y), (panel_x+container_w, panel_y+container_h), (250,250,250), -1)
     cv2.rectangle(frame, (panel_x, panel_y), (panel_x+container_w, panel_y+container_h), (180,180,180), 2)
-    cv2.putText(frame, "Colores", (panel_x+5, panel_y+25), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (50,50,50), 2)
+    cv2.putText(frame, "Colores", (panel_x+10, panel_y+25), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (50,50,50), 2)
 
     start_x = panel_x + padding
-    start_y = panel_y + 40
+    start_y = panel_y + 30
     MARGIN = 2
 
     # ---- Paleta principal ----

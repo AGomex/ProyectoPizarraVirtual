@@ -74,12 +74,37 @@ WSGI_APPLICATION = 'virtualboard.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+
+# Conectar Clever Cloud PostgreSQL
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'bcovnbsrr5iysxntxdyc',
+        'USER': 'udtqwtlojqkorb0kvnt3',
+        'PASSWORD': 'uHZBYIOZd20XTZOWVmbyaJI30eZvYZ',
+        'HOST': 'bcovnbsrr5iysxntxdyc-postgresql.services.clever-cloud.com',
+        'PORT': '5432',
+    }
+}  
+"""
+
+# Conectar Render Cloud DBeaver PostgreSQL
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'pizarravirtual',
+        'USER': 'pizarravirtual_user',
+        'PASSWORD': 'cATGQ1HAAMgiYLL3raBsP9tT4DfbOe0I',
+        'HOST': 'dpg-d47vtfa4d50c738f3btg-a.oregon-postgres.render.com', 
+        'PORT': '5432',
+    }   
 }
 
 
