@@ -37,6 +37,7 @@ packaging==25.0
 pillow==11.3.0
 poyo==0.5.0
 protobuf==4.25.8
+psycopg2-binary==2.9.11
 pycparser==2.23
 pyparsing==3.2.5
 python-dateutil==2.9.0.post0
